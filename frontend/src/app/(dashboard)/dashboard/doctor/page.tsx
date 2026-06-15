@@ -65,7 +65,7 @@ function QuickAction({ icon: Icon, label, href, color, bg }: { icon: any; label:
       href={href}
       className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group"
     >
-      <div className={`p-2.5 rounded-lg ${bg} group-hover:scale-110 transition-transform`}>
+        <div className={`p-2.5 rounded-lg ${bg}`}>
         <Icon className={`h-5 w-5 ${color}`} />
       </div>
       <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{label}</span>

@@ -16,7 +16,7 @@ export const StatsCard = ({ title, value, icon: Icon, gradient }: StatsCardProps
     <Card className="premium-card overflow-hidden group">
       <CardHeader className="flex flex-row items-center justify-between pb-3">
         <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
-        <div className={`p-2.5 rounded-xl ${gradient} shadow-lg transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3`}>
+        <div className={`p-2.5 rounded-xl ${gradient} shadow-lg transition-transform duration-300 group-hover:scale-105`}>
           <Icon className="h-5 w-5 text-white" />
         </div>
       </CardHeader>
