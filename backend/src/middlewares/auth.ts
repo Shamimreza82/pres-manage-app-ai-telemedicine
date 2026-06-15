@@ -1,0 +1,27 @@
+import { Response, NextFunction } from 'express';
+import { verifyAccessToken } from '../utils/jwt';
+import { unauthorized, forbidden } from '../utils/errors';
+import { AuthRequest } from '../types/express';
+
+export const authenticate = (req: AuthRequest, _res: Response, next: NextFunction) => {
+  const header = req.headers.authorization;
+  const queryToken = req.query.token as string | undefined;
+  const token = header?.startsWith('Bearer ') ? header.split(' ')[1] : queryToken;
+
+  if (!token) return next(unauthorized('No token provided'));
+
+  try {
+    req.user = verifyAccessToken(token);
+    next();
+  } catch {
+    next(unauthorized('Invalid or expired token'));
+  }
+};
+
+export const authorize = (...roles: string[]) =>
+  (req: AuthRequest, _res: Response, next: NextFunction) => {
+    if (!req.user || !roles.includes(req.user.role)) {
+      return next(forbidden('Insufficient permissions'));
+    }
+    next();
+  };

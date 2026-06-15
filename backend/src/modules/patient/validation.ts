@@ -1,0 +1,24 @@
+import { z } from 'zod';
+
+export const createPatientSchema = z.object({
+  fullName: z.string().min(2, 'Name must be at least 2 characters'),
+  age: z.number().int().positive('Age must be a positive number'),
+  gender: z.enum(['MALE', 'FEMALE', 'OTHER']),
+  bloodGroup: z.enum(['A_POSITIVE', 'A_NEGATIVE', 'B_POSITIVE', 'B_NEGATIVE', 'AB_POSITIVE', 'AB_NEGATIVE', 'O_POSITIVE', 'O_NEGATIVE']).optional(),
+  weight: z.number().positive().optional(),
+  height: z.number().positive().optional(),
+  phone: z.string().min(5, 'Invalid phone number').optional(),
+  address: z.string().optional(),
+  medicalHistory: z.string().optional(),
+  allergies: z.string().optional(),
+  previousDiseases: z.string().optional(),
+  emergencyContact: z.string().optional(),
+});
+
+export const updatePatientSchema = createPatientSchema.partial();
+
+export const patientQuerySchema = z.object({
+  page: z.coerce.number().int().positive().optional().default(1),
+  limit: z.coerce.number().int().positive().max(100).optional().default(20),
+  search: z.string().optional().default(''),
+});
