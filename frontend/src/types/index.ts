@@ -1,7 +1,7 @@
 export interface User {
   id: string;
   email: string;
-  role: "SUPER_ADMIN" | "DOCTOR" | "RECEPTIONIST";
+  role: "SUPER_ADMIN" | "DOCTOR" | "RECEPTIONIST" | "MEDICAL_REPRESENTATIVE";
   isActive: boolean;
   doctor?: Doctor;
   createdAt: string;

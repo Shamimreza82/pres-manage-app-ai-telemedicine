@@ -10,6 +10,7 @@ const generateTokens = (payload: {
   email: string;
   role: string;
   doctorId?: string;
+  mrId?: string;
 }): Tokens => ({
   accessToken: signAccessToken(payload),
   refreshToken: signRefreshToken(payload),
@@ -45,13 +46,15 @@ export const registerUser = async (input: RegisterInput) => {
     });
 
     if (user.doctor) {
+      const freePlan = await tx.plan.findFirst({ where: { price: 0, isActive: true }, select: { id: true, patientLimit: true, prescriptionLimit: true } });
+      if (!freePlan) throw new Error('No free plan found');
       await tx.subscription.create({
         data: {
           doctorId: user.doctor.id,
-          plan: 'FREE',
+          planId: freePlan.id,
           status: 'ACTIVE',
-          patientLimit: 50,
-          prescriptionLimit: 100,
+          patientLimit: freePlan.patientLimit,
+          prescriptionLimit: freePlan.prescriptionLimit,
         },
       });
     }
@@ -88,6 +91,7 @@ export const loginUser = async (input: LoginInput) => {
     email: user.email,
     role: user.role,
     doctorId: user.doctor?.id,
+    mrId: user.mr?.id,
   };
 
   const tokens = generateTokens(payload);
@@ -99,6 +103,7 @@ export const loginUser = async (input: LoginInput) => {
       email: user.email,
       role: user.role,
       doctor: user.doctor,
+      mr: user.mr,
     },
     tokens,
   };
@@ -115,6 +120,7 @@ export const refreshUserToken = async (token: string) => {
       email: user.email,
       role: user.role,
       doctorId: user.doctor?.id,
+      mrId: user.mr?.id,
     };
 
     const tokens = generateTokens(payload);

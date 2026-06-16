@@ -17,6 +17,8 @@ export const useLogin = () => {
       toast.success('Welcome back!');
       if (data.data.user.role === 'SUPER_ADMIN') {
         router.push('/dashboard/admin');
+      } else if (data.data.user.role === 'MEDICAL_REPRESENTATIVE') {
+        router.push('/dashboard/mr');
       } else {
         router.push('/dashboard/doctor');
       }
@@ -38,6 +40,8 @@ export const useRegister = () => {
       toast.success('Account created successfully!');
       if (data.data.user.role === 'SUPER_ADMIN') {
         router.push('/dashboard/admin');
+      } else if (data.data.user.role === 'MEDICAL_REPRESENTATIVE') {
+        router.push('/dashboard/mr');
       } else {
         router.push('/dashboard/doctor');
       }

@@ -8,8 +8,8 @@
 ```
 backend/
   prisma/
-    schema.prisma             # Database schema, enums, models
-    seed.ts                   # Seeds default users (admin + doctor)
+    schema.prisma             # Database schema, enums, models (snake_case table/field names via @@map/@map)
+    seed.ts                   # Seeds default users (admin + doctor) + plans (Free, Basic, Premium)
   src/
     server.ts                 # Entry point
     app.ts                    # Express app setup + route mounting
@@ -22,20 +22,22 @@ backend/
       upload.ts               # Multer file upload config
       validate.ts             # Zod validation middleware (validateBody, validateQuery)
     modules/
-      {module}/
-        route.ts              # Router + middleware wiring
-        controller.ts         # Request handlers
-        service.ts            # Business logic
-        repository.ts         # Prisma queries
-        types.ts              # Input/output interfaces
-        validation.ts         # Zod schemas (backend)
+      auth/                   # Login, register, refresh, change-password
+      doctor/                 # Profile, subscription mgmt (activate, pending, confirm, reject, cancel)
+      patient/
+      prescription/
+      appointment/
+      notification/
+      plan/                   # Plan CRUD (admin creates/edits/deletes plans)
+      subscription/           # Dashboard stats, admin subscription listing
+      mr/                     # Medical representative management
     types/
       express.ts              # AuthPayload, AuthRequest
     utils/
       apiResponse.ts          # sendSuccess, sendPaginated, sendError
       errors.ts               # AppError class + factory functions (notFound, badRequest, unauthorized, forbidden)
       jwt.ts                  # signAccessToken, signRefreshToken, verifyAccessToken, verifyRefreshToken
-      pagination.ts           # getPaginationParams
+      pagination.ts           # getPaginationParams (supports search, status, planId)
       password.ts             # hashPassword, comparePassword
 frontend/
   src/
@@ -45,30 +47,38 @@ frontend/
         page.tsx              # Role-based redirect (/admin or /doctor)
         dashboard/
           admin/              # Super admin pages
-            page.tsx          # Overview stats
+            page.tsx          # Overview stats (pending subs count)
             doctors/page.tsx
             patients/page.tsx
             users/page.tsx
-            subscriptions/page.tsx
+            medical-reps/page.tsx
+            plans/page.tsx           # CRUD subscription plans
+            subscriptions/page.tsx           # All subscriptions + cancel + status/plan filters
+            subscriptions/pending/page.tsx   # Pending subscriptions with confirm/reject
             logs/page.tsx
-          doctor/page.tsx     # Doctor dashboard
+          doctor/
+            page.tsx          # Doctor dashboard
+            settings/plans/page.tsx              # View + subscribe to plans (trans ID + notes modal)
+            settings/change-password/page.tsx    # Change password with eye toggle
+          mr/
+            page.tsx
+            doctors/page.tsx          # Table view of assigned doctors
+            doctors/[id]/prescriptions/page.tsx
       auth/
         login/page.tsx
         register/page.tsx
     components/
-      ui/                     # Shadcn-style primitives (button, input, table, badge, pagination, dialog, select, etc.)
-      layout/                 # sidebar.tsx, header.tsx
+      ui/                     # button, input, table, badge, pagination, dialog, confirm-dialog, filter-select, etc.
+      layout/                 # sidebar.tsx (nested menus for Settings, Subscriptions), header.tsx
       admin/                  # DataTable.tsx (SearchBar only)
-    features/                 # Feature-based modules
-      {feature}/
-        api.ts                # Axios API calls
-        hooks.ts              # React Query hooks (useQuery / useMutation)
-        types.ts              # TypeScript interfaces
-        schema.ts             # Zod validation schemas
-        components/           # Feature-specific components
+    features/
+      plans/                  # Plan CRUD + subscription activation + pending + confirm/reject/cancel
+        api.ts / hooks.ts / types.ts
+      dashboard/              # Admin/doctor dashboard stats
+      auth/ / doctor/ / patient/ / prescription/ / appointment/ / mr/
     lib/
       axios.ts                # Axios instance with token interceptor + refresh queue
-      utils.ts                # cn(), formatDate(), localStorage helpers (getUser, setTokens, etc.)
+      utils.ts                # cn(), formatDate(), localStorage helpers
     providers/
       theme-provider.tsx      # Theme context
       query-provider.tsx      # React Query client
@@ -144,7 +154,7 @@ export const doSomething = async (id: string, input: InputType) => {
 ### Auth Types
 ```ts
 // backend/src/types/express.ts
-interface AuthPayload { userId: string; email: string; role: string; doctorId?: string; }
+interface AuthPayload { userId: string; email: string; role: string; doctorId?: string; mrId?: string; }
 type AuthRequest = Request & { user?: AuthPayload };
 ```
 
@@ -238,24 +248,40 @@ useAuthGuard();  // Redirects to /auth/login if no token in localStorage
 
 ## Super Admin
 - **Login:** `admin@presmanage.com` / `admin123`
+
+## Medical Representative (Demo)
+- **Login:** `mr@example.com` / `mr123`
+- **Assigned to:** Dr. John Doe (seeded doctor)
+- **Dashboard:** `/dashboard/mr`
+- **Permissions:** View-only — can see assigned doctors' prescriptions and patients
 - **Sidebar routes:**
   - `/dashboard/admin` — overview stats
   - `/dashboard/admin/doctors` — manage doctors
   - `/dashboard/admin/patients` — all patients
   - `/dashboard/admin/users` — manage users
-  - `/dashboard/admin/subscriptions` — subscription plans
+  - `/dashboard/admin/medical-reps` — manage MRs + assign doctors
+  - `/dashboard/admin/plans` — CRUD subscription plans
+  - `/dashboard/admin/subscriptions` — all subscriptions (with status/plan filters + cancel)
+  - `/dashboard/admin/subscriptions/pending` — pending subscriptions (verify trans ID, confirm/reject)
   - `/dashboard/admin/logs` — activity audit logs
 
+## Doctor Dashboard Settings
+- **Plans:** `/dashboard/doctor/settings/plans` — view plans, subscribe (trans ID + notes modal), see pending/active status
+- **Change Password:** `/dashboard/doctor/settings/change-password` — update password with eye toggle
+
 ## Database Models (Prisma)
-- **User** — `id, email, password, role (SUPER_ADMIN|DOCTOR|RECEPTIONIST), isActive, isVerified, refreshToken`
+- **User** — `id, email, password, role (SUPER_ADMIN|DOCTOR|RECEPTIONIST|MEDICAL_REPRESENTATIVE), isActive, isVerified, refreshToken`
 - **Doctor** — `id, userId (unique), fullName, degree, specialization, bmdcRegNo, clinicName, clinicAddress, phone, signatureImg, clinicLogo, chamberSchedule, isProfileComplete`
 - **Patient** — `id, patientId (unique), doctorId, fullName, age, gender, bloodGroup, weight, height, phone, address`
 - **Prescription** — `id, prescriptionNo (unique), doctorId, patientId, symptoms, diagnosis, medicines[], investigations[]`
 - **Appointment** — `id, doctorId, patientId, date, time, status (SCHEDULED|COMPLETED|CANCELLED|NO_SHOW)`
-- **Subscription** — `id, doctorId (unique), plan (FREE|PREMIUM), status (ACTIVE|EXPIRED|CANCELLED), patientLimit, prescriptionLimit, startDate, endDate`
-- **Payment** — `id, subscriptionId, amount, currency, status, paymentMethod, transactionId`
+- **Subscription** — `id, doctorId (unique), planId, status (PENDING|ACTIVE|EXPIRED|CANCELLED), patientLimit, prescriptionLimit, startDate, endDate`
+- **Plan** — `id, name (unique), description, price, patientLimit, prescriptionLimit, duration, isActive`
+- **Payment** — `id, subscriptionId, amount, currency, status, paymentMethod, transactionId, notes`
 - **AuditLog** — `id, userId, action, entity, entityId, details, ipAddress, createdAt`
 - **Notification** — `id, userId, title, message, type, isRead`
+- **Mr** — `id, userId (unique), fullName, phone`
+- **DoctorMrAssignment** — `id, doctorId, mrId (unique pair)`
 
 ## Common Commands
 ```bash
@@ -286,3 +312,8 @@ cd frontend && npx tsc --noEmit    # Type-check frontend
 | **Query with params** | `queryKey: [...keys.list, params]` |
 | **Pagination component** | Controlled: `page, totalPages, total, onPageChange` |
 | **Data fetching pattern** | `useQuery + api.ts` for reads, `useMutation + api.ts` for writes |
+| **ConfirmDialog** | Reusable: `<ConfirmDialog open title message confirmLabel variant loading onConfirm />` in `@/components/ui/confirm-dialog` |
+| **FilterSelect** | Reusable: `<FilterSelect value onChange options placeholder />` in `@/components/ui/filter-select` |
+| **Sidebar nested menus** | Parent items with `children: [{ href, label, icon }]` render collapsible submenus |
+| **Subscription flow** | Doctor subscribes → `PENDING` (paid) / `ACTIVE` (free) → Admin verifies trans ID → confirms → `ACTIVE` |
+| **Plan schema** | All tables/fields use snake_case via `@@map` / `@map` in Prisma schema |

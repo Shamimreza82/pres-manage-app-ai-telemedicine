@@ -33,7 +33,7 @@ export const useAdminUsers = (params?: { page?: number; limit?: number; search?:
     queryFn: () => dashboardApi.getAdminUsers(params),
   });
 
-export const useAdminSubscriptions = (params?: { page?: number; limit?: number; search?: string }) =>
+export const useAdminSubscriptions = (params?: { page?: number; limit?: number; search?: string; status?: string; planId?: string }) =>
   useQuery({
     queryKey: [...dashboardKeys.adminSubscriptions, params],
     queryFn: () => dashboardApi.getAdminSubscriptions(params),

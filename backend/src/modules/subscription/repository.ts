@@ -26,12 +26,39 @@ export const getAdminStats = () =>
     db.patient.count(),
     db.prescription.count(),
     db.payment.aggregate({ _sum: { amount: true } }),
-    db.subscription.groupBy({ by: ['plan'], _count: true }),
+    db.subscription.groupBy({ by: ['planId'], _count: true }),
     db.subscription.groupBy({ by: ['status'], _count: true }),
+    db.subscription.count({ where: { status: 'PENDING' } }),
   ] as const);
 
 export const getSubscriptionByDoctor = (doctorId: string) =>
-  db.subscription.findUnique({ where: { doctorId } });
+  db.subscription.findUnique({
+    where: { doctorId },
+    include: { plan: true },
+  });
+
+export const activatePlan = (doctorId: string, planId: string, patientLimit: number, prescriptionLimit: number, endDate: Date | null) =>
+  db.subscription.upsert({
+    where: { doctorId },
+    update: {
+      planId,
+      status: 'ACTIVE',
+      patientLimit,
+      prescriptionLimit,
+      startDate: new Date(),
+      endDate,
+    },
+    create: {
+      doctorId,
+      planId,
+      status: 'ACTIVE',
+      patientLimit,
+      prescriptionLimit,
+      startDate: new Date(),
+      endDate,
+    },
+    include: { plan: true },
+  });
 
 export const getAuditLogs = (pagination: { skip: number; limit: number; search: string }) => {
   const where: any = {};
@@ -126,8 +153,10 @@ export const getAllPatientsForAdmin = (pagination: { skip: number; limit: number
   ] as const);
 };
 
-export const getAllSubscriptions = (pagination: { skip: number; limit: number; search: string }) => {
+export const getAllSubscriptions = (pagination: { skip: number; limit: number; search: string; status?: string; planId?: string }) => {
   const where: any = {};
+  if (pagination.status) where.status = pagination.status;
+  if (pagination.planId) where.planId = pagination.planId;
   if (pagination.search) {
     where.doctor = {
       OR: [
@@ -150,6 +179,7 @@ export const getAllSubscriptions = (pagination: { skip: number; limit: number; s
             user: { select: { email: true } },
           },
         },
+        plan: true,
         payments: { orderBy: { createdAt: 'desc' }, take: 5 },
       },
       orderBy: { createdAt: 'desc' },

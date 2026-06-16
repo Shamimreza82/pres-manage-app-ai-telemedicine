@@ -13,7 +13,7 @@ export const getAdminDoctors = (params?: { page?: number; limit?: number; search
 export const getAdminUsers = (params?: { page?: number; limit?: number; search?: string }) =>
   api.get('/stats/admin/users', { params }).then((r) => r.data);
 
-export const getAdminSubscriptions = (params?: { page?: number; limit?: number; search?: string }) =>
+export const getAdminSubscriptions = (params?: { page?: number; limit?: number; search?: string; status?: string; planId?: string }) =>
   api.get('/stats/admin/subscriptions', { params }).then((r) => r.data);
 
 export const getAdminPatients = (params?: { page?: number; limit?: number; search?: string }) =>

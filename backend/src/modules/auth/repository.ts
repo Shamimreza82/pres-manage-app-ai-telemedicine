@@ -1,10 +1,10 @@
 import { db } from '../../config/database';
 
 export const findUserByEmail = (email: string) =>
-  db.user.findUnique({ where: { email }, include: { doctor: true } });
+  db.user.findUnique({ where: { email }, include: { doctor: true, mr: true } });
 
 export const findUserById = (id: string) =>
-  db.user.findUnique({ where: { id }, include: { doctor: true } });
+  db.user.findUnique({ where: { id }, include: { doctor: true, mr: true } });
 
 export const createUser = (data: {
   email: string;
@@ -39,13 +39,16 @@ export const updateRefreshToken = (userId: string, refreshToken: string | null) 
 export const updatePassword = (userId: string, hashedPassword: string) =>
   db.user.update({ where: { id: userId }, data: { password: hashedPassword } });
 
-export const createFreeSubscription = (doctorId: string) =>
-  db.subscription.create({
+export const createFreeSubscription = async (doctorId: string) => {
+  const freePlan = await db.plan.findFirst({ where: { price: 0, isActive: true }, select: { id: true, patientLimit: true, prescriptionLimit: true } });
+  if (!freePlan) throw new Error('No free plan found');
+  return db.subscription.create({
     data: {
       doctorId,
-      plan: 'FREE',
+      planId: freePlan.id,
       status: 'ACTIVE',
-      patientLimit: 50,
-      prescriptionLimit: 100,
+      patientLimit: freePlan.patientLimit,
+      prescriptionLimit: freePlan.prescriptionLimit,
     },
   });
+};

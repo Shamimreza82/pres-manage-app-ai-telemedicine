@@ -17,6 +17,8 @@ import prescriptionRoutes from './modules/prescription/route';
 import appointmentRoutes from './modules/appointment/route';
 import notificationRoutes from './modules/notification/route';
 import subscriptionRoutes from './modules/subscription/route';
+import mrRoutes from './modules/mr/route';
+import planRoutes from './modules/plan/route';
 
 const app = express();
 
@@ -61,6 +63,8 @@ app.use('/api/prescriptions', prescriptionRoutes);
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/stats', subscriptionRoutes);
+app.use('/api/mr', mrRoutes);
+app.use('/api/plans', planRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

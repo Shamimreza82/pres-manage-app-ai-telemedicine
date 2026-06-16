@@ -32,5 +32,6 @@ export interface User {
   role: string;
   isActive: boolean;
   doctor?: any;
+  mr?: any;
   createdAt: string;
 }

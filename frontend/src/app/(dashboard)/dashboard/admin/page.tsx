@@ -3,7 +3,7 @@
 import { useAdminDashboard } from '@/features/dashboard/hooks';
 import { StatsCard } from '@/features/dashboard/components/StatsCard';
 import { Badge } from '@/components/ui/badge';
-import { Users, Activity, DollarSign, Shield } from 'lucide-react';
+import { Users, Activity, DollarSign, Shield, Clock } from 'lucide-react';
 
 export default function AdminDashboardPage() {
   const { data: stats, isLoading } = useAdminDashboard();
@@ -28,10 +28,11 @@ export default function AdminDashboardPage() {
         <p className="text-sm text-muted-foreground mt-1">System overview and analytics</p>
       </div>
 
-      <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-5">
         <StatsCard title="Total Doctors" value={stats?.totalDoctors || 0} icon={Users} gradient="gradient-primary" />
         <StatsCard title="Active Doctors" value={stats?.activeDoctors || 0} icon={Activity} gradient="gradient-success" />
         <StatsCard title="Total Patients" value={stats?.totalPatients || 0} icon={Shield} gradient="gradient-info" />
+        <StatsCard title="Pending Subs" value={stats?.pendingSubscriptions || 0} icon={Clock} gradient="gradient-warning" />
         <StatsCard title="Revenue" value={`$${stats?.totalRevenue || 0}`} icon={DollarSign} gradient="gradient-warning" />
       </div>
 
@@ -46,7 +47,7 @@ export default function AdminDashboardPage() {
                   <div className="flex items-center gap-3">
                     <div className="w-24 h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
                       <div
-                        className={`h-full rounded-full ${p.plan === 'PREMIUM' ? 'bg-gradient-to-r from-amber-400 to-amber-600' : 'bg-gradient-to-r from-blue-400 to-blue-600'}`}
+                        className={`h-full rounded-full ${p.plan === 'Premium' || p.plan === 'premium' ? 'bg-gradient-to-r from-amber-400 to-amber-600' : 'bg-gradient-to-r from-blue-400 to-blue-600'}`}
                         style={{ width: `${stats.totalDoctors ? (p._count / stats.totalDoctors) * 100 : 0}%` }}
                       />
                     </div>
@@ -91,7 +92,7 @@ export default function AdminDashboardPage() {
               { label: 'Total Prescriptions', value: stats?.totalPrescriptions || 0 },
               { label: 'Active Doctors', value: `${stats?.activeDoctors || 0} / ${stats?.totalDoctors || 0}` },
               { label: 'Total Patients', value: stats?.totalPatients || 0 },
-              { label: 'Free / Premium', value: `${stats?.planDistribution?.find(p => p.plan === 'FREE')?._count || 0} / ${stats?.planDistribution?.find(p => p.plan === 'PREMIUM')?._count || 0}` },
+              { label: 'Plan Distribution', value: stats?.planDistribution?.map(p => `${p.plan}: ${p._count}`).join(', ') || '0' },
             ].map((item, i) => (
               <div key={item.label} className={`flex justify-between items-center py-2 ${i < 3 ? 'border-b border-gray-100 dark:border-gray-800' : ''}`}>
                 <span className="text-sm text-muted-foreground">{item.label}</span>

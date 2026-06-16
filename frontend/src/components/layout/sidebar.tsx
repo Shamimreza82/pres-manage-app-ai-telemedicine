@@ -8,7 +8,7 @@ import { useLogout } from '@/features/auth/hooks';
 import {
   LayoutDashboard, Users, FileText, Calendar, Building2,
   LogOut, Sun, Moon, Stethoscope, ChevronLeft, ChevronRight,
-  Shield, UserCog, CreditCard, PersonStanding, ClipboardList,
+  Shield, UserCog, CreditCard, PersonStanding, ClipboardList, UserRound, Crown, Settings, ChevronDown,
 } from 'lucide-react';
 import { useThemeContext } from '@/providers/theme-provider';
 
@@ -17,7 +17,14 @@ const doctorMenu = [
   { href: '/patients', label: 'Patients', icon: Users, gradient: 'from-emerald-500 to-emerald-600' },
   { href: '/prescriptions', label: 'Prescriptions', icon: FileText, gradient: 'from-violet-500 to-violet-600' },
   { href: '/appointments', label: 'Appointments', icon: Calendar, gradient: 'from-amber-500 to-orange-500' },
-  { href: '/profile', label: 'Clinic', icon: Building2, gradient: 'from-rose-500 to-rose-600' },
+  {
+    label: 'Settings', icon: Settings, gradient: 'from-purple-500 to-purple-600',
+    children: [
+      { href: '/dashboard/doctor/settings/plans', label: 'Plans', icon: Crown },
+      { href: '/dashboard/doctor/settings/change-password', label: 'Change Password', icon: Shield },
+    ],
+  },
+  { href: '/profile', label: 'Clinic & Chamber', icon: Building2, gradient: 'from-rose-500 to-rose-600' },
 ];
 
 const adminMenu = [
@@ -25,22 +32,129 @@ const adminMenu = [
   { href: '/dashboard/admin/doctors', label: 'Doctors', icon: Stethoscope, gradient: 'from-emerald-500 to-emerald-600' },
   { href: '/dashboard/admin/patients', label: 'Patients', icon: PersonStanding, gradient: 'from-sky-500 to-sky-600' },
   { href: '/dashboard/admin/users', label: 'Users', icon: UserCog, gradient: 'from-violet-500 to-violet-600' },
-  { href: '/dashboard/admin/subscriptions', label: 'Subscriptions', icon: CreditCard, gradient: 'from-amber-500 to-orange-500' },
+  { href: '/dashboard/admin/medical-reps', label: 'Medical Reps', icon: UserRound, gradient: 'from-teal-500 to-teal-600' },
+  { href: '/dashboard/admin/plans', label: 'Plans', icon: Crown, gradient: 'from-purple-500 to-purple-600' },
+  {
+    label: 'Subscriptions', icon: CreditCard, gradient: 'from-amber-500 to-orange-500',
+    children: [
+      { href: '/dashboard/admin/subscriptions', label: 'All Subscriptions', icon: CreditCard },
+      { href: '/dashboard/admin/subscriptions/pending', label: 'Pending Subs', icon: CreditCard },
+    ],
+  },
   { href: '/dashboard/admin/logs', label: 'Activity Logs', icon: ClipboardList, gradient: 'from-rose-500 to-rose-600' },
 ];
+
+const mrMenu = [
+  { href: '/dashboard/mr', label: 'Dashboard', icon: LayoutDashboard, gradient: 'from-teal-500 to-teal-600' },
+  { href: '/dashboard/mr/doctors', label: 'Doctors', icon: Stethoscope, gradient: 'from-emerald-500 to-emerald-600' },
+];
+
+interface MenuItem {
+  href?: string;
+  label: string;
+  icon: any;
+  gradient?: string;
+  children?: { href: string; label: string; icon: any }[];
+}
 
 export const Sidebar = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({});
   const pathname = usePathname();
   const logout = useLogout();
   const { theme, toggle } = useThemeContext();
 
   useEffect(() => { setMounted(true); }, []);
 
+  const toggleMenu = (label: string) => {
+    setExpandedMenus((prev) => ({ ...prev, [label]: !prev[label] }));
+  };
+
   const user = mounted ? getUser() : null;
   const isAdmin = user?.role === 'SUPER_ADMIN';
-  const menuItems = isAdmin ? adminMenu : doctorMenu;
+  const isMr = user?.role === 'MEDICAL_REPRESENTATIVE';
+  const menuItems: MenuItem[] = isAdmin ? adminMenu : isMr ? mrMenu : doctorMenu;
+
+  const renderMenuItem = (item: MenuItem) => {
+    if (item.children) {
+      const isExpanded = expandedMenus[item.label];
+      const childActive = item.children.some((c) => pathname === c.href || pathname.startsWith(c.href + '/'));
+
+      return (
+        <div key={item.label}>
+          <button
+            onClick={() => !collapsed && toggleMenu(item.label)}
+            className={cn(
+              'flex items-center gap-3 rounded-xl text-sm font-medium transition-all duration-200 w-full',
+              collapsed ? 'justify-center px-0 py-3' : 'px-3.5 py-2.5',
+              childActive
+                ? 'text-white bg-gradient-to-r ' + item.gradient
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800/50'
+            )}
+            title={collapsed ? item.label : undefined}
+          >
+            <item.icon className={cn('h-5 w-5 shrink-0', childActive ? 'text-white' : '')} />
+            {!collapsed && (
+              <>
+                <span className="truncate flex-1 text-left">{item.label}</span>
+                <ChevronDown
+                  className={cn('h-4 w-4 transition-transform', isExpanded ? 'rotate-0' : '-rotate-90')}
+                />
+              </>
+            )}
+          </button>
+          {!collapsed && isExpanded && (
+            <div className="ml-3 mt-1 space-y-1 border-l border-gray-100 dark:border-gray-800/50 pl-3">
+              {item.children.map((child) => {
+                const isChildActive = pathname === child.href || pathname.startsWith(child.href + '/');
+                return (
+                  <Link
+                    key={child.href}
+                    href={child.href}
+                    className={cn(
+                      'flex items-center gap-3 rounded-lg text-sm font-medium transition-all duration-200 py-2 px-3',
+                      isChildActive
+                        ? 'text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/30'
+                        : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800/50'
+                    )}
+                  >
+                    <child.icon className={cn('h-4 w-4 shrink-0')} />
+                    <span className="truncate">{child.label}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    const Icon = item.icon;
+    const isActive = isAdmin || isMr
+      ? pathname === item.href || (item.href !== '/dashboard/admin' && item.href !== '/dashboard/mr' && pathname.startsWith(item.href + '/'))
+      : pathname === item.href || pathname.startsWith(item.href + '/');
+    return (
+      <div key={`${item.href}-${item.label}`} title={collapsed ? item.label : undefined}>
+        <Link
+          href={item.href!}
+          className={cn(
+            'flex items-center gap-3 rounded-xl text-sm font-medium transition-all duration-200 relative group',
+            collapsed ? 'justify-center px-0 py-3' : 'px-3.5 py-2.5',
+            isActive
+              ? 'text-white bg-gradient-to-r ' + item.gradient
+              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800/50'
+          )}
+        >
+          <Icon className={cn('h-5 w-5 shrink-0', isActive ? 'text-white' : '')} />
+          {!collapsed && <span className="truncate">{item.label}</span>}
+          {isActive && !collapsed && (
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-white/60" />
+          )}
+        </Link>
+      </div>
+    );
+  };
 
   return (
     <>
@@ -60,17 +174,17 @@ export const Sidebar = () => {
           {!collapsed && (
             <div className="flex items-center gap-3 min-w-0">
               <div className="w-9 h-9 rounded-xl gradient-primary shadow-glow flex items-center justify-center shrink-0">
-                {isAdmin ? <Shield className="h-5 w-5 text-white" /> : <Stethoscope className="h-5 w-5 text-white" />}
+                {isAdmin ? <Shield className="h-5 w-5 text-white" /> : isMr ? <UserRound className="h-5 w-5 text-white" /> : <Stethoscope className="h-5 w-5 text-white" />}
               </div>
               <div className="truncate">
                 <h1 className="text-lg font-bold text-gray-900 dark:text-white truncate">PresManage</h1>
-                <p className="text-xs text-muted-foreground truncate">{isAdmin ? 'Admin Portal' : (user?.doctor?.clinicName || 'Doctor Portal')}</p>
+                <p className="text-xs text-muted-foreground truncate">{isAdmin ? 'Admin Portal' : isMr ? 'MR Portal' : (user?.doctor?.clinicName || 'Doctor Portal')}</p>
               </div>
             </div>
           )}
           {collapsed && (
             <div className="w-9 h-9 rounded-xl gradient-primary shadow-glow flex items-center justify-center">
-              {isAdmin ? <Shield className="h-5 w-5 text-white" /> : <Stethoscope className="h-5 w-5 text-white" />}
+              {isAdmin ? <Shield className="h-5 w-5 text-white" /> : isMr ? <UserRound className="h-5 w-5 text-white" /> : <Stethoscope className="h-5 w-5 text-white" />}
             </div>
           )}
           <button
@@ -83,32 +197,7 @@ export const Sidebar = () => {
 
         {/* Navigation */}
         <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
-          {menuItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = isAdmin
-              ? pathname === item.href || (item.href !== '/dashboard/admin' && pathname.startsWith(item.href + '/'))
-              : pathname === item.href || pathname.startsWith(item.href + '/');
-            return (
-              <div key={`${item.href}-${item.label}`} title={collapsed ? item.label : undefined}>
-                <Link
-                  href={item.href}
-                  className={cn(
-                    'flex items-center gap-3 rounded-xl text-sm font-medium transition-all duration-200 relative group',
-                    collapsed ? 'justify-center px-0 py-3' : 'px-3.5 py-2.5',
-                    isActive
-                      ? 'text-white bg-gradient-to-r ' + item.gradient
-                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800/50'
-                  )}
-                >
-                  <Icon className={cn('h-5 w-5 shrink-0', isActive ? 'text-white' : '')} />
-                  {!collapsed && <span className="truncate">{item.label}</span>}
-                  {isActive && !collapsed && (
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-white/60" />
-                  )}
-                </Link>
-              </div>
-            );
-          })}
+          {menuItems.map(renderMenuItem)}
         </nav>
 
         {/* Footer */}

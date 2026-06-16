@@ -70,6 +70,15 @@ export const getAdminSubscriptions = async (req: AuthRequest, res: Response, nex
   }
 };
 
+export const activate = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const sub = await subscriptionService.activateSubscription(req.user!.doctorId!, req.body.planId);
+    sendSuccess(res, sub);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const getAdminPatients = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const [patients, total] = await subscriptionService.getAdminPatients(req.query);

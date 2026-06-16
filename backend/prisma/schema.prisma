@@ -11,14 +11,11 @@ enum UserRole {
   SUPER_ADMIN
   DOCTOR
   RECEPTIONIST
-}
-
-enum SubscriptionPlan {
-  FREE
-  PREMIUM
+  MEDICAL_REPRESENTATIVE
 }
 
 enum SubscriptionStatus {
+  PENDING
   ACTIVE
   EXPIRED
   CANCELLED
@@ -53,36 +50,39 @@ model User {
   email         String    @unique
   password      String
   role          UserRole  @default(DOCTOR)
-  isActive      Boolean   @default(true)
-  isVerified    Boolean   @default(false)
-  refreshToken  String?
-  resetToken    String?
-  resetTokenExp DateTime?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  isActive      Boolean   @default(true)            @map("is_active")
+  isVerified    Boolean   @default(false)            @map("is_verified")
+  refreshToken  String?                             @map("refresh_token")
+  resetToken    String?                             @map("reset_token")
+  resetTokenExp DateTime?                           @map("reset_token_exp")
+  createdAt     DateTime  @default(now())            @map("created_at")
+  updatedAt     DateTime  @updatedAt                 @map("updated_at")
 
   doctor        Doctor?
   receptionist  Receptionist?
+  mr            Mr?
   auditLogs     AuditLog[]
   notifications Notification[]
+
+  @@map("users")
 }
 
 model Doctor {
   id                  String           @id @default(uuid())
-  userId              String           @unique
-  fullName            String
+  userId              String           @unique                             @map("user_id")
+  fullName            String                                               @map("full_name")
   degree              String
   specialization      String
-  bmdcRegNo           String?
-  clinicName          String
-  clinicAddress       String
+  bmdcRegNo           String?                                              @map("bmdc_reg_no")
+  clinicName          String                                               @map("clinic_name")
+  clinicAddress       String                                               @map("clinic_address")
   phone               String
-  signatureImg        String?
-  clinicLogo          String?
-  chamberSchedule     Json?
-  isProfileComplete   Boolean          @default(false)
-  createdAt           DateTime         @default(now())
-  updatedAt           DateTime         @updatedAt
+  signatureImg        String?                                              @map("signature_img")
+  clinicLogo          String?                                              @map("clinic_logo")
+  chamberSchedule     Json?                                                @map("chamber_schedule")
+  isProfileComplete   Boolean          @default(false)                     @map("is_profile_complete")
+  createdAt           DateTime         @default(now())                     @map("created_at")
+  updatedAt           DateTime         @updatedAt                          @map("updated_at")
 
   user                User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   patients            Patient[]
@@ -90,161 +90,230 @@ model Doctor {
   appointments       Appointment[]
   subscription       Subscription?
   receptionists       Receptionist[]
+  mrAssignments       DoctorMrAssignment[]
+
+  @@map("doctors")
 }
 
 model Receptionist {
   id        String   @id @default(uuid())
-  userId    String   @unique
-  doctorId  String
-  fullName  String
+  userId    String   @unique                    @map("user_id")
+  doctorId  String                              @map("doctor_id")
+  fullName  String                              @map("full_name")
   phone     String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())            @map("created_at")
+  updatedAt DateTime @updatedAt                 @map("updated_at")
 
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   doctor    Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+  @@map("receptionists")
+}
+
+model Mr {
+  id        String   @id @default(uuid())
+  userId    String   @unique                    @map("user_id")
+  fullName  String                              @map("full_name")
+  phone     String
+  createdAt DateTime @default(now())            @map("created_at")
+  updatedAt DateTime @updatedAt                 @map("updated_at")
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  doctors   DoctorMrAssignment[]
+
+  @@map("mrs")
+}
+
+model DoctorMrAssignment {
+  id        String   @id @default(uuid())
+  doctorId  String                              @map("doctor_id")
+  mrId      String                              @map("mr_id")
+  createdAt DateTime @default(now())            @map("created_at")
+
+  doctor    Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  mr        Mr       @relation(fields: [mrId], references: [id], onDelete: Cascade)
+
+  @@unique([doctorId, mrId])
+  @@map("doctor_mr_assignments")
 }
 
 model Patient {
   id               String     @id @default(uuid())
-  patientId        String     @unique
-  doctorId         String
-  fullName         String
+  patientId        String     @unique                 @map("patient_id")
+  doctorId         String                              @map("doctor_id")
+  fullName         String                              @map("full_name")
   age              Int
   gender           Gender
-  bloodGroup       BloodGroup?
+  bloodGroup       BloodGroup?                         @map("blood_group")
   weight           Float?
   height           Float?
   phone            String?
   address          String?
-  medicalHistory   String?
+  medicalHistory   String?                             @map("medical_history")
   allergies        String?
-  previousDiseases String?
-  emergencyContact String?
-  createdAt        DateTime   @default(now())
-  updatedAt        DateTime   @updatedAt
+  previousDiseases String?                             @map("previous_diseases")
+  emergencyContact String?                             @map("emergency_contact")
+  createdAt        DateTime   @default(now())          @map("created_at")
+  updatedAt        DateTime   @updatedAt               @map("updated_at")
 
   doctor           Doctor     @relation(fields: [doctorId], references: [id], onDelete: Cascade)
   prescriptions    Prescription[]
   appointments     Appointment[]
+
+  @@map("patients")
 }
 
 model Prescription {
-  id              String   @id @default(uuid())
-  prescriptionNo  String   @unique
-  doctorId        String
-  patientId       String
+  id              String    @id @default(uuid())
+  prescriptionNo  String    @unique                              @map("prescription_no")
+  doctorId        String                                          @map("doctor_id")
+  patientId       String                                          @map("patient_id")
   symptoms        String?
-  chiefComplaint  String?
+  chiefComplaint  String?                                         @map("chief_complaint")
   diagnosis       String?
-  diagnosisNotes  String?
-  bloodPressure   String?
-  pulseRate       String?
+  diagnosisNotes  String?                                         @map("diagnosis_notes")
+  bloodPressure   String?                                         @map("blood_pressure")
+  pulseRate       String?                                         @map("pulse_rate")
   temperature     String?
-  oxygenSaturation String?
+  oxygenSaturation String?                                        @map("oxygen_saturation")
   advice          String?
-  foodAdvice      String?
-  followUpDate    DateTime?
+  foodAdvice      String?                                         @map("food_advice")
+  followUpDate    DateTime?                                       @map("follow_up_date")
   notes           String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt       DateTime  @default(now())                       @map("created_at")
+  updatedAt       DateTime  @updatedAt                            @map("updated_at")
 
-  doctor          Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
-  patient         Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctor          Doctor    @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  patient         Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
   medicines       Medicine[]
   investigations  Investigation[]
+
+  @@map("prescriptions")
 }
 
 model Medicine {
   id            String       @id @default(uuid())
-  prescriptionId String
+  prescriptionId String                                   @map("prescription_id")
   name          String
   strength      String?
   dosage        String
   frequency     String
   duration      String
   instructions  String?
-  createdAt     DateTime     @default(now())
+  createdAt     DateTime     @default(now())               @map("created_at")
 
   prescription  Prescription @relation(fields: [prescriptionId], references: [id], onDelete: Cascade)
+
+  @@map("medicines")
 }
 
 model Investigation {
   id            String       @id @default(uuid())
-  prescriptionId String
+  prescriptionId String                                   @map("prescription_id")
   name          String
   notes         String?
-  createdAt     DateTime     @default(now())
+  createdAt     DateTime     @default(now())               @map("created_at")
 
   prescription  Prescription @relation(fields: [prescriptionId], references: [id], onDelete: Cascade)
+
+  @@map("investigations")
 }
 
 model Appointment {
   id            String            @id @default(uuid())
-  doctorId      String
-  patientId     String
+  doctorId      String                                  @map("doctor_id")
+  patientId     String                                  @map("patient_id")
   date          DateTime
   time          String
   status        AppointmentStatus @default(SCHEDULED)
   notes         String?
-  createdAt     DateTime          @default(now())
-  updatedAt     DateTime          @updatedAt
+  createdAt     DateTime          @default(now())        @map("created_at")
+  updatedAt     DateTime          @updatedAt             @map("updated_at")
 
   doctor        Doctor            @relation(fields: [doctorId], references: [id], onDelete: Cascade)
   patient       Patient           @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@map("appointments")
+}
+
+model Plan {
+  id                String           @id @default(uuid())
+  name              String           @unique
+  description       String?
+  price             Float
+  patientLimit      Int
+  prescriptionLimit Int
+  duration          Int              @default(30)
+  isActive          Boolean          @default(true)
+  createdAt         DateTime         @default(now())            @map("created_at")
+  updatedAt         DateTime         @updatedAt                 @map("updated_at")
+
+  subscriptions     Subscription[]
+
+  @@map("plans")
 }
 
 model Subscription {
   id            String             @id @default(uuid())
-  doctorId      String             @unique
-  plan          SubscriptionPlan   @default(FREE)
+  doctorId      String             @unique                             @map("doctor_id")
+  planId        String                                                 @map("plan_id")
   status        SubscriptionStatus @default(ACTIVE)
-  patientLimit  Int                @default(50)
-  prescriptionLimit Int            @default(100)
-  startDate     DateTime           @default(now())
-  endDate       DateTime?
-  stripeSubId   String?
-  createdAt     DateTime           @default(now())
-  updatedAt     DateTime           @updatedAt
+  patientLimit  Int                @default(50)                        @map("patient_limit")
+  prescriptionLimit Int            @default(100)                        @map("prescription_limit")
+  startDate     DateTime           @default(now())                     @map("start_date")
+  endDate       DateTime?                                               @map("end_date")
+  stripeSubId   String?                                                 @map("stripe_sub_id")
+  createdAt     DateTime           @default(now())                     @map("created_at")
+  updatedAt     DateTime           @updatedAt                          @map("updated_at")
 
   doctor        Doctor             @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  plan          Plan               @relation(fields: [planId], references: [id])
   payments      Payment[]
+
+  @@map("subscriptions")
 }
 
 model Payment {
-  id             String   @id @default(uuid())
-  subscriptionId String
+  id             String       @id @default(uuid())
+  subscriptionId String                                    @map("subscription_id")
   amount         Float
-  currency       String   @default("BDT")
+  currency       String       @default("BDT")
   status         String
-  paymentMethod  String
-  transactionId  String   @unique
-  createdAt      DateTime @default(now())
+  paymentMethod  String                                    @map("payment_method")
+  transactionId  String       @unique                      @map("transaction_id")
+  notes          String?                                   @map("notes")
+  createdAt      DateTime     @default(now())               @map("created_at")
 
   subscription   Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@map("payments")
 }
 
 model Notification {
   id        String   @id @default(uuid())
-  userId    String
+  userId    String                              @map("user_id")
   title     String
   message   String
   type      String
-  isRead    Boolean  @default(false)
-  createdAt DateTime @default(now())
+  isRead    Boolean  @default(false)            @map("is_read")
+  createdAt DateTime @default(now())            @map("created_at")
 
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
 }
 
 model AuditLog {
   id        String   @id @default(uuid())
-  userId    String
+  userId    String                              @map("user_id")
   action    String
   entity    String
-  entityId  String?
+  entityId  String?                             @map("entity_id")
   details   Json?
-  ipAddress String?
-  createdAt DateTime @default(now())
+  ipAddress String?                             @map("ip_address")
+  createdAt DateTime @default(now())            @map("created_at")
 
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("audit_logs")
 }

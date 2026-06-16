@@ -12,6 +12,7 @@ export interface AdminDashboardData {
   totalPatients: number;
   totalPrescriptions: number;
   totalRevenue: number;
+  pendingSubscriptions: number;
   planDistribution: Array<{ plan: string; _count: number }>;
   subscriptionStatusDistribution: Array<{ status: string; _count: number }>;
 }

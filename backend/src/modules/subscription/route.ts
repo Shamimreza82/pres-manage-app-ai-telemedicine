@@ -1,5 +1,7 @@
 import { Router } from 'express';
 import { authenticate, authorize } from '../../middlewares/auth';
+import { validateBody } from '../../middlewares/validate';
+import { z } from 'zod';
 import * as subscriptionController from './controller';
 
 const router = Router();
@@ -14,5 +16,6 @@ router.get('/admin/subscriptions', authorize('SUPER_ADMIN'), subscriptionControl
 router.get('/admin/patients', authorize('SUPER_ADMIN'), subscriptionController.getAdminPatients);
 router.get('/my', subscriptionController.getMySubscription);
 router.get('/logs', authorize('SUPER_ADMIN'), subscriptionController.getLogs);
+router.post('/activate', authorize('DOCTOR'), validateBody(z.object({ planId: z.string().uuid() })), subscriptionController.activate);
 
 export default router;

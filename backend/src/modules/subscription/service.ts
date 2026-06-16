@@ -1,5 +1,7 @@
 import { getPaginationParams } from '../../utils/pagination';
+import { db } from '../../config/database';
 import { Request } from 'express';
+import { badRequest } from '../../utils/errors';
 import * as repo from './repository';
 
 export const getDoctorDashboardStats = async (doctorId: string) => {
@@ -9,15 +11,27 @@ export const getDoctorDashboardStats = async (doctorId: string) => {
 };
 
 export const getAdminDashboardStats = async () => {
-  const [totalDoctors, activeDoctors, totalPatients, totalPrescriptions, revenue, planDist, statusDist] =
+  const [totalDoctors, activeDoctors, totalPatients, totalPrescriptions, revenue, planDist, statusDist, pendingCount] =
     await repo.getAdminStats();
+
+  const planIds = planDist.map((p) => p.planId);
+  const plans = await db.plan.findMany({ where: { id: { in: planIds } }, select: { id: true, name: true } });
+  const planMap = new Map(plans.map((p) => [p.id, p.name]));
+
+  const planDistribution = planDist.map((p) => ({
+    plan: planMap.get(p.planId) || p.planId,
+    planId: p.planId,
+    _count: p._count,
+  }));
+
   return {
     totalDoctors,
     activeDoctors,
     totalPatients,
     totalPrescriptions,
     totalRevenue: revenue._sum.amount || 0,
-    planDistribution: planDist,
+    pendingSubscriptions: pendingCount,
+    planDistribution,
     subscriptionStatusDistribution: statusDist,
   };
 };
@@ -48,4 +62,14 @@ export const getAdminSubscriptions = (query: Request['query']) => {
 export const getAdminPatients = (query: Request['query']) => {
   const pagination = getPaginationParams(query);
   return repo.getAllPatientsForAdmin(pagination);
+};
+
+export const activateSubscription = async (doctorId: string, planId: string) => {
+  const plan = await db.plan.findUnique({ where: { id: planId } });
+  if (!plan) throw badRequest('Plan not found');
+  if (!plan.isActive) throw badRequest('Plan is not available');
+
+  const endDate = plan.duration ? new Date(Date.now() + plan.duration * 24 * 60 * 60 * 1000) : null;
+
+  return repo.activatePlan(doctorId, planId, plan.patientLimit, plan.prescriptionLimit, endDate);
 };

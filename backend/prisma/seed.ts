@@ -1,4 +1,4 @@
-import { PrismaClient, UserRole } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
@@ -19,6 +19,48 @@ async function main() {
   });
 
   console.log('Super admin created:', admin.email);
+
+  // Seed default plans
+  const freePlan = await prisma.plan.upsert({
+    where: { name: 'Free' },
+    update: {},
+    create: {
+      name: 'Free',
+      description: 'Basic plan for getting started',
+      price: 0,
+      patientLimit: 50,
+      prescriptionLimit: 100,
+      duration: 0,
+    },
+  });
+
+  const basicPlan = await prisma.plan.upsert({
+    where: { name: 'Basic' },
+    update: {},
+    create: {
+      name: 'Basic',
+      description: 'Essential features for small clinics',
+      price: 29,
+      patientLimit: 200,
+      prescriptionLimit: 500,
+      duration: 30,
+    },
+  });
+
+  const premiumPlan = await prisma.plan.upsert({
+    where: { name: 'Premium' },
+    update: {},
+    create: {
+      name: 'Premium',
+      description: 'Full access for busy practices',
+      price: 99,
+      patientLimit: 1000,
+      prescriptionLimit: 5000,
+      duration: 30,
+    },
+  });
+
+  console.log('Plans seeded: Free, Basic, Premium');
 
   const doctorPassword = await bcrypt.hash('doctor123', 12);
   const doctorUser = await prisma.user.upsert({
@@ -52,18 +94,20 @@ async function main() {
       update: {},
       create: {
         doctorId: doctorUser.doctor.id,
-        plan: 'FREE',
+        planId: freePlan.id,
         status: 'ACTIVE',
-        patientLimit: 50,
-        prescriptionLimit: 100,
+        patientLimit: freePlan.patientLimit,
+        prescriptionLimit: freePlan.prescriptionLimit,
       },
     });
   }
 
   console.log('Doctor created:', doctorUser.email);
 
-  const patient = await prisma.patient.create({
-    data: {
+  const patient = await prisma.patient.upsert({
+    where: { patientId: 'PAT-000001' },
+    update: {},
+    create: {
       patientId: 'PAT-000001',
       doctorId: doctorUser.doctor!.id,
       fullName: 'Jane Smith',
@@ -78,6 +122,13 @@ async function main() {
   });
 
   console.log('Patient created:', patient.fullName);
+
+  const existingRx = await prisma.prescription.findUnique({ where: { prescriptionNo: 'RX-20240101-A1B2' } });
+  if (existingRx) {
+    await prisma.medicine.deleteMany({ where: { prescriptionId: existingRx.id } });
+    await prisma.investigation.deleteMany({ where: { prescriptionId: existingRx.id } });
+    await prisma.prescription.delete({ where: { id: existingRx.id } });
+  }
 
   const rx = await prisma.prescription.create({
     data: {
@@ -125,6 +176,39 @@ async function main() {
   });
 
   console.log('Prescription created:', rx.prescriptionNo);
+
+  const mrPassword = await bcrypt.hash('mr123', 12);
+  const mrUser = await prisma.user.upsert({
+    where: { email: 'mr@example.com' },
+    update: {},
+    create: {
+      email: 'mr@example.com',
+      password: mrPassword,
+      role: 'MEDICAL_REPRESENTATIVE',
+      isVerified: true,
+      isActive: true,
+      mr: {
+        create: {
+          fullName: 'Md. Rahim Uddin',
+          phone: '+8801700000002',
+        },
+      },
+    },
+    include: { mr: true },
+  });
+
+  if (mrUser.mr && doctorUser.doctor) {
+    await prisma.doctorMrAssignment.upsert({
+      where: { doctorId_mrId: { doctorId: doctorUser.doctor.id, mrId: mrUser.mr.id } },
+      update: {},
+      create: {
+        doctorId: doctorUser.doctor.id,
+        mrId: mrUser.mr.id,
+      },
+    });
+  }
+
+  console.log('MR created:', mrUser.email);
   console.log('Seeding complete!');
 }
 

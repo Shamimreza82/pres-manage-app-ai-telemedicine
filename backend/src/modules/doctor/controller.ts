@@ -63,6 +63,61 @@ export const getAllDoctors = async (req: AuthRequest, res: Response, next: NextF
   }
 };
 
+export const getMySubscription = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const sub = await doctorService.getDoctorSubscription(req.user!.doctorId!);
+    sendSuccess(res, sub);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const activatePlan = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const sub = await doctorService.activateSubscription(req.user!.doctorId!, req.body.planId, req.body.transactionId, req.body.notes);
+    sendSuccess(res, sub);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getPendingSubscriptions = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const [subs, total] = await doctorService.getPendingSubscriptions(req.query);
+    const { page, limit } = req.query;
+    sendPaginated(res, subs, total, Number(page) || 1, Number(limit) || 20);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const cancelSubscription = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const sub = await doctorService.cancelSubscription(req.params.id as string);
+    sendSuccess(res, sub);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const rejectSubscription = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const sub = await doctorService.rejectSubscription(req.params.id as string);
+    sendSuccess(res, sub);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const confirmSubscription = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const sub = await doctorService.confirmSubscription(req.params.id as string);
+    sendSuccess(res, sub);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const toggleStatus = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     await doctorService.toggleDoctorStatus(req.params.id as string);
