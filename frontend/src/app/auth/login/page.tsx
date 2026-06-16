@@ -20,6 +20,7 @@ export default function LoginPage() {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<LoginForm>({ resolver: zodResolver(loginSchema) });
 
@@ -102,7 +103,31 @@ export default function LoginPage() {
             </form>
           </div>
 
-          <p className="text-center text-xs text-muted-foreground mt-6">
+          {/* Demo credentials */}
+          <div className="mt-6 p-4 rounded-xl bg-blue-50/50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/50">
+            <p className="text-xs font-semibold text-blue-700 dark:text-blue-300 mb-2">Demo Credentials</p>
+            <div className="space-y-1.5">
+              {[
+                { label: 'Admin', email: 'admin@presmanage.com', pass: 'admin123' },
+                { label: 'Doctor', email: 'doctor@example.com', pass: 'doctor123' },
+              ].map((cred) => (
+                <button
+                  key={cred.label}
+                  type="button"
+                  onClick={() => {
+                    setValue('email', cred.email, { shouldValidate: true });
+                    setValue('password', cred.pass, { shouldValidate: true });
+                  }}
+                  className="w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-xs bg-white/70 dark:bg-gray-900/70 hover:bg-white dark:hover:bg-gray-900 border border-blue-100 dark:border-blue-900/50 transition-colors cursor-pointer"
+                >
+                  <span className="font-medium text-blue-700 dark:text-blue-300">{cred.label}</span>
+                  <span className="text-muted-foreground">{cred.email} / {cred.pass}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <p className="text-center text-xs text-muted-foreground mt-4">
             By signing in, you agree to our Terms of Service and Privacy Policy
           </p>
         </div>

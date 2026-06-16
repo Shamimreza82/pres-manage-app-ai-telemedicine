@@ -5,8 +5,7 @@ import { AuthRequest } from '../types/express';
 
 export const authenticate = (req: AuthRequest, _res: Response, next: NextFunction) => {
   const header = req.headers.authorization;
-  const queryToken = req.query.token as string | undefined;
-  const token = header?.startsWith('Bearer ') ? header.split(' ')[1] : queryToken;
+  const token = header?.startsWith('Bearer ') ? header.split(' ')[1] : undefined;
 
   if (!token) return next(unauthorized('No token provided'));
 

@@ -15,7 +15,11 @@ export const useLogin = () => {
       setTokens(data.data.tokens.accessToken, data.data.tokens.refreshToken);
       setUser(data.data.user);
       toast.success('Welcome back!');
-      router.push('/dashboard/doctor');
+      if (data.data.user.role === 'SUPER_ADMIN') {
+        router.push('/dashboard/admin');
+      } else {
+        router.push('/dashboard/doctor');
+      }
     },
     onError: (err: any) => {
       toast.error(err.response?.data?.message || 'Login failed');
@@ -32,7 +36,11 @@ export const useRegister = () => {
       setTokens(data.data.tokens.accessToken, data.data.tokens.refreshToken);
       setUser(data.data.user);
       toast.success('Account created successfully!');
-      router.push('/dashboard/doctor');
+      if (data.data.user.role === 'SUPER_ADMIN') {
+        router.push('/dashboard/admin');
+      } else {
+        router.push('/dashboard/doctor');
+      }
     },
     onError: (err: any) => {
       toast.error(err.response?.data?.message || 'Registration failed');

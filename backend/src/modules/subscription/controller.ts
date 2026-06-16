@@ -1,6 +1,6 @@
 import { NextFunction, Response } from 'express';
 import { AuthRequest } from '../../types/express';
-import { sendSuccess } from '../../utils/apiResponse';
+import { sendSuccess, sendPaginated } from '../../utils/apiResponse';
 import * as subscriptionService from './service';
 
 export const getDoctorDashboard = async (req: AuthRequest, res: Response, next: NextFunction) => {
@@ -32,8 +32,49 @@ export const getMySubscription = async (req: AuthRequest, res: Response, next: N
 
 export const getLogs = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    const logs = await subscriptionService.getActivityLogs();
-    sendSuccess(res, logs);
+    const [logs, total] = await subscriptionService.getActivityLogs(req.query);
+    const { page, limit } = req.query;
+    sendPaginated(res, logs, total, Number(page) || 1, Number(limit) || 20);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getAdminDoctors = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const [doctors, total] = await subscriptionService.getAdminDoctors(req.query);
+    const { page, limit } = req.query;
+    sendPaginated(res, doctors, total, Number(page) || 1, Number(limit) || 20);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getAdminUsers = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const [users, total] = await subscriptionService.getAdminUsers(req.query);
+    const { page, limit } = req.query;
+    sendPaginated(res, users, total, Number(page) || 1, Number(limit) || 20);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getAdminSubscriptions = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const [subscriptions, total] = await subscriptionService.getAdminSubscriptions(req.query);
+    const { page, limit } = req.query;
+    sendPaginated(res, subscriptions, total, Number(page) || 1, Number(limit) || 20);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getAdminPatients = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const [patients, total] = await subscriptionService.getAdminPatients(req.query);
+    const { page, limit } = req.query;
+    sendPaginated(res, patients, total, Number(page) || 1, Number(limit) || 20);
   } catch (error) {
     next(error);
   }

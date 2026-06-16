@@ -27,14 +27,133 @@ export const getAdminStats = () =>
     db.prescription.count(),
     db.payment.aggregate({ _sum: { amount: true } }),
     db.subscription.groupBy({ by: ['plan'], _count: true }),
+    db.subscription.groupBy({ by: ['status'], _count: true }),
   ] as const);
 
 export const getSubscriptionByDoctor = (doctorId: string) =>
   db.subscription.findUnique({ where: { doctorId } });
 
-export const getAuditLogs = () =>
-  db.auditLog.findMany({
-    include: { user: { select: { email: true } } },
-    orderBy: { createdAt: 'desc' },
-    take: 100,
-  });
+export const getAuditLogs = (pagination: { skip: number; limit: number; search: string }) => {
+  const where: any = {};
+  if (pagination.search) {
+    where.OR = [
+      { action: { contains: pagination.search, mode: 'insensitive' } },
+      { entity: { contains: pagination.search, mode: 'insensitive' } },
+      { user: { email: { contains: pagination.search, mode: 'insensitive' } } },
+    ];
+  }
+  return Promise.all([
+    db.auditLog.findMany({
+      where,
+      skip: pagination.skip,
+      take: pagination.limit,
+      include: { user: { select: { email: true } } },
+      orderBy: { createdAt: 'desc' },
+    }),
+    db.auditLog.count({ where }),
+  ] as const);
+};
+
+export const getAllDoctorsForAdmin = (pagination: { skip: number; limit: number; search: string }) => {
+  const where: any = {};
+  if (pagination.search) {
+    where.OR = [
+      { fullName: { contains: pagination.search, mode: 'insensitive' } },
+      { clinicName: { contains: pagination.search, mode: 'insensitive' } },
+      { user: { email: { contains: pagination.search, mode: 'insensitive' } } },
+    ];
+  }
+  return Promise.all([
+    db.doctor.findMany({
+      where,
+      skip: pagination.skip,
+      take: pagination.limit,
+      include: {
+        user: { select: { id: true, email: true, isActive: true, isVerified: true, createdAt: true } },
+        subscription: true,
+        _count: { select: { patients: true, prescriptions: true, appointments: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    }),
+    db.doctor.count({ where }),
+  ] as const);
+};
+
+export const getAllUsers = (pagination: { skip: number; limit: number; search: string }) => {
+  const where: any = {};
+  if (pagination.search) {
+    where.OR = [
+      { email: { contains: pagination.search, mode: 'insensitive' } },
+    ];
+  }
+  return Promise.all([
+    db.user.findMany({
+      where,
+      skip: pagination.skip,
+      take: pagination.limit,
+      include: {
+        doctor: { select: { id: true, fullName: true, clinicName: true } },
+        receptionist: { select: { id: true, fullName: true } },
+        _count: { select: { auditLogs: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    }),
+    db.user.count({ where }),
+  ] as const);
+};
+
+export const getAllPatientsForAdmin = (pagination: { skip: number; limit: number; search: string }) => {
+  const where: any = {};
+  if (pagination.search) {
+    where.OR = [
+      { fullName: { contains: pagination.search, mode: 'insensitive' } },
+      { patientId: { contains: pagination.search, mode: 'insensitive' } },
+      { phone: { contains: pagination.search, mode: 'insensitive' } },
+    ];
+  }
+  return Promise.all([
+    db.patient.findMany({
+      where,
+      skip: pagination.skip,
+      take: pagination.limit,
+      include: {
+        doctor: { select: { id: true, fullName: true, clinicName: true } },
+        _count: { select: { prescriptions: true, appointments: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    }),
+    db.patient.count({ where }),
+  ] as const);
+};
+
+export const getAllSubscriptions = (pagination: { skip: number; limit: number; search: string }) => {
+  const where: any = {};
+  if (pagination.search) {
+    where.doctor = {
+      OR: [
+        { fullName: { contains: pagination.search, mode: 'insensitive' } },
+        { clinicName: { contains: pagination.search, mode: 'insensitive' } },
+      ],
+    };
+  }
+  return Promise.all([
+    db.subscription.findMany({
+      where,
+      skip: pagination.skip,
+      take: pagination.limit,
+      include: {
+        doctor: {
+          select: {
+            id: true,
+            fullName: true,
+            clinicName: true,
+            user: { select: { email: true } },
+          },
+        },
+        payments: { orderBy: { createdAt: 'desc' }, take: 5 },
+      },
+      orderBy: { createdAt: 'desc' },
+    }),
+    db.subscription.count({ where }),
+  ] as const);
+};

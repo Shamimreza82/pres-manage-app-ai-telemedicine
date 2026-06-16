@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn, getUser } from '@/lib/utils';
@@ -8,10 +8,11 @@ import { useLogout } from '@/features/auth/hooks';
 import {
   LayoutDashboard, Users, FileText, Calendar, Building2,
   LogOut, Sun, Moon, Stethoscope, ChevronLeft, ChevronRight,
+  Shield, UserCog, CreditCard, PersonStanding, ClipboardList,
 } from 'lucide-react';
 import { useThemeContext } from '@/providers/theme-provider';
 
-const menuItems = [
+const doctorMenu = [
   { href: '/dashboard/doctor', label: 'Dashboard', icon: LayoutDashboard, gradient: 'from-blue-500 to-blue-600' },
   { href: '/patients', label: 'Patients', icon: Users, gradient: 'from-emerald-500 to-emerald-600' },
   { href: '/prescriptions', label: 'Prescriptions', icon: FileText, gradient: 'from-violet-500 to-violet-600' },
@@ -19,12 +20,27 @@ const menuItems = [
   { href: '/profile', label: 'Clinic', icon: Building2, gradient: 'from-rose-500 to-rose-600' },
 ];
 
+const adminMenu = [
+  { href: '/dashboard/admin', label: 'Dashboard', icon: Shield, gradient: 'from-indigo-500 to-indigo-600' },
+  { href: '/dashboard/admin/doctors', label: 'Doctors', icon: Stethoscope, gradient: 'from-emerald-500 to-emerald-600' },
+  { href: '/dashboard/admin/patients', label: 'Patients', icon: PersonStanding, gradient: 'from-sky-500 to-sky-600' },
+  { href: '/dashboard/admin/users', label: 'Users', icon: UserCog, gradient: 'from-violet-500 to-violet-600' },
+  { href: '/dashboard/admin/subscriptions', label: 'Subscriptions', icon: CreditCard, gradient: 'from-amber-500 to-orange-500' },
+  { href: '/dashboard/admin/logs', label: 'Activity Logs', icon: ClipboardList, gradient: 'from-rose-500 to-rose-600' },
+];
+
 export const Sidebar = () => {
   const [collapsed, setCollapsed] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
-  const user = getUser();
   const logout = useLogout();
   const { theme, toggle } = useThemeContext();
+
+  useEffect(() => { setMounted(true); }, []);
+
+  const user = mounted ? getUser() : null;
+  const isAdmin = user?.role === 'SUPER_ADMIN';
+  const menuItems = isAdmin ? adminMenu : doctorMenu;
 
   return (
     <>
@@ -44,17 +60,17 @@ export const Sidebar = () => {
           {!collapsed && (
             <div className="flex items-center gap-3 min-w-0">
               <div className="w-9 h-9 rounded-xl gradient-primary shadow-glow flex items-center justify-center shrink-0">
-                <Stethoscope className="h-5 w-5 text-white" />
+                {isAdmin ? <Shield className="h-5 w-5 text-white" /> : <Stethoscope className="h-5 w-5 text-white" />}
               </div>
               <div className="truncate">
                 <h1 className="text-lg font-bold text-gray-900 dark:text-white truncate">PresManage</h1>
-                <p className="text-xs text-muted-foreground truncate">{user?.doctor?.clinicName || 'Doctor Portal'}</p>
+                <p className="text-xs text-muted-foreground truncate">{isAdmin ? 'Admin Portal' : (user?.doctor?.clinicName || 'Doctor Portal')}</p>
               </div>
             </div>
           )}
           {collapsed && (
             <div className="w-9 h-9 rounded-xl gradient-primary shadow-glow flex items-center justify-center">
-              <Stethoscope className="h-5 w-5 text-white" />
+              {isAdmin ? <Shield className="h-5 w-5 text-white" /> : <Stethoscope className="h-5 w-5 text-white" />}
             </div>
           )}
           <button
@@ -69,9 +85,11 @@ export const Sidebar = () => {
         <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
           {menuItems.map((item) => {
             const Icon = item.icon;
-            const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+            const isActive = isAdmin
+              ? pathname === item.href || (item.href !== '/dashboard/admin' && pathname.startsWith(item.href + '/'))
+              : pathname === item.href || pathname.startsWith(item.href + '/');
             return (
-              <div key={item.href} title={collapsed ? item.label : undefined}>
+              <div key={`${item.href}-${item.label}`} title={collapsed ? item.label : undefined}>
                 <Link
                   href={item.href}
                   className={cn(

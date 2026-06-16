@@ -8,6 +8,10 @@ router.use(authenticate);
 
 router.get('/doctor', authorize('DOCTOR'), subscriptionController.getDoctorDashboard);
 router.get('/admin', authorize('SUPER_ADMIN'), subscriptionController.getAdminDashboard);
+router.get('/admin/doctors', authorize('SUPER_ADMIN'), subscriptionController.getAdminDoctors);
+router.get('/admin/users', authorize('SUPER_ADMIN'), subscriptionController.getAdminUsers);
+router.get('/admin/subscriptions', authorize('SUPER_ADMIN'), subscriptionController.getAdminSubscriptions);
+router.get('/admin/patients', authorize('SUPER_ADMIN'), subscriptionController.getAdminPatients);
 router.get('/my', subscriptionController.getMySubscription);
 router.get('/logs', authorize('SUPER_ADMIN'), subscriptionController.getLogs);
 
