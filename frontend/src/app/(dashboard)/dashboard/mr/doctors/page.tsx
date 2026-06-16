@@ -5,19 +5,24 @@ import { useMyDoctors } from '@/features/mr/hooks';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { SearchBar } from '@/components/admin/DataTable';
-import { FileText, Stethoscope, ArrowLeft } from 'lucide-react';
+import { Pagination } from '@/components/ui/pagination';
+import { FileText, Stethoscope, ArrowLeft, Eye } from 'lucide-react';
 import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 
 export default function MrDoctorsPage() {
   const [search, setSearch] = useState('');
-  const { data: doctors, isLoading } = useMyDoctors();
+  const [page, setPage] = useState(1);
+  const { data, isLoading } = useMyDoctors({ page, search: search || undefined });
 
-  const filtered = (doctors || []).filter(
-    (doc: any) =>
-      doc.fullName?.toLowerCase().includes(search.toLowerCase()) ||
-      doc.specialization?.toLowerCase().includes(search.toLowerCase()) ||
-      doc.clinicName?.toLowerCase().includes(search.toLowerCase()),
-  );
+  const doctors = data?.data ?? [];
+  const total = data?.total ?? 0;
+  const totalPages = data?.totalPages ?? 1;
+
+  const handleSearch = (val: string) => {
+    setSearch(val);
+    setPage(1);
+  };
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -31,7 +36,7 @@ export default function MrDoctorsPage() {
         </div>
       </div>
 
-      <SearchBar value={search} onChange={setSearch} />
+      <SearchBar value={search} onChange={handleSearch} />
 
       {isLoading ? (
         <div className="space-y-3">
@@ -39,7 +44,7 @@ export default function MrDoctorsPage() {
             <div key={i} className="h-12 bg-gray-200 dark:bg-gray-800 rounded-lg animate-pulse" />
           ))}
         </div>
-      ) : !filtered.length ? (
+      ) : !doctors.length ? (
         <div className="premium-card-static p-12 text-center">
           <Stethoscope className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">No Doctors Assigned</h3>
@@ -58,14 +63,14 @@ export default function MrDoctorsPage() {
                 <TableHead>BMDC Reg No</TableHead>
                 <TableHead>Patients</TableHead>
                 <TableHead>Prescriptions</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filtered.map((doc: any) => (
+              {doctors.map((doc: any) => (
                 <TableRow
                   key={doc.id}
-                  className="cursor-pointer hover:bg-muted/50"
-                  onClick={() => window.location.href = `/dashboard/mr/doctors/${doc.id}/prescriptions`}
+                  className="hover:bg-muted/50"
                 >
                   <TableCell className="font-medium">
                     <Link href={`/dashboard/mr/doctors/${doc.id}/prescriptions`} className="hover:text-teal-600 dark:hover:text-teal-400 transition-colors">
@@ -90,12 +95,19 @@ export default function MrDoctorsPage() {
                       <span className="text-xs text-muted-foreground">{doc._count?.prescriptions || 0}</span>
                     </div>
                   </TableCell>
+                  <TableCell className="text-right">
+                    <Link href={`/dashboard/mr/doctors/${doc.id}/prescriptions`}>
+                      <Button variant="ghost" size="icon" className="hover:bg-blue-50 dark:hover:bg-blue-950/30 rounded-lg">
+                        <Eye className="h-4 w-4 text-muted-foreground" />
+                      </Button>
+                    </Link>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
-          <div className="px-4 py-3 border-t border-gray-100 dark:border-gray-800/50 text-xs text-muted-foreground">
-            Showing {filtered.length} doctor{filtered.length !== 1 ? 's' : ''}
+          <div className="px-4 py-3 border-t border-gray-100 dark:border-gray-800/50">
+            <Pagination page={page} totalPages={totalPages} total={total} onPageChange={setPage} />
           </div>
         </div>
       )}

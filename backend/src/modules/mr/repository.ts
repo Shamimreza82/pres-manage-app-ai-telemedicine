@@ -137,6 +137,32 @@ export const findDoctorsForAssignment = () =>
     orderBy: { fullName: 'asc' },
   });
 
+export const getMyDoctorsPaginated = (mrId: string, pagination: PaginationParams) => {
+  const where: any = {
+    mrAssignments: { some: { mrId } },
+  };
+  if (pagination.search) {
+    where.OR = [
+      { fullName: { contains: pagination.search, mode: 'insensitive' } },
+      { specialization: { contains: pagination.search, mode: 'insensitive' } },
+      { clinicName: { contains: pagination.search, mode: 'insensitive' } },
+    ];
+  }
+  return Promise.all([
+    db.doctor.findMany({
+      where,
+      skip: pagination.skip,
+      take: pagination.limit,
+      include: {
+        user: { select: { email: true } },
+        _count: { select: { patients: true, prescriptions: true } },
+      },
+      orderBy: { fullName: 'asc' },
+    }),
+    db.doctor.count({ where }),
+  ] as const);
+};
+
 export const getTodaysPrescriptionsByDoctors = (doctorIds: string[]) => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);

@@ -13,10 +13,10 @@ export const mrKeys = {
   availableDoctors: ['mr', 'available-doctors'] as const,
 };
 
-export const useMyDoctors = () =>
+export const useMyDoctors = (params?: { page?: number; limit?: number; search?: string }) =>
   useQuery({
-    queryKey: mrKeys.myDoctors,
-    queryFn: mrApi.getMyDoctors,
+    queryKey: [...mrKeys.myDoctors, params],
+    queryFn: () => mrApi.getMyDoctors(params),
   });
 
 export const useDoctorPatients = (doctorId: string) =>

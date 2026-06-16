@@ -2,20 +2,25 @@ import { Response, NextFunction } from 'express';
 import { verifyAccessToken } from '../utils/jwt';
 import { unauthorized, forbidden } from '../utils/errors';
 import { AuthRequest } from '../types/express';
+import { db } from '../config/database';
+import { catchAsync } from '../utils/catchAsync';
 
-export const authenticate = (req: AuthRequest, _res: Response, next: NextFunction) => {
+export const authenticate = catchAsync(async (req: AuthRequest, _res: Response, next: NextFunction) => {
   const header = req.headers.authorization;
   const token = header?.startsWith('Bearer ') ? header.split(' ')[1] : undefined;
 
   if (!token) return next(unauthorized('No token provided'));
 
   try {
-    req.user = verifyAccessToken(token);
+    const decoded = verifyAccessToken(token);
+    const user = await db.user.findUnique({ where: { id: decoded.userId }, select: { isActive: true } });
+    if (!user || !user.isActive) return next(unauthorized('Account is deactivated'));
+    req.user = decoded;
     next();
   } catch {
     next(unauthorized('Invalid or expired token'));
   }
-};
+});
 
 export const authorize = (...roles: string[]) =>
   (req: AuthRequest, _res: Response, next: NextFunction) => {

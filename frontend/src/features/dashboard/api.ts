@@ -21,3 +21,6 @@ export const getAdminPatients = (params?: { page?: number; limit?: number; searc
 
 export const getAdminLogs = (params?: { page?: number; limit?: number; search?: string }) =>
   api.get('/stats/logs', { params }).then((r) => r.data);
+
+export const toggleUserStatus = (userId: string) =>
+  api.patch(`/admin/users/${userId}/status`).then((r) => r.data);

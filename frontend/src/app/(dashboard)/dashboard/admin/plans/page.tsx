@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { usePlans, useCreatePlan, useUpdatePlan, useDeletePlan } from '@/features/plans/hooks';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Pencil, Trash2, Plus } from 'lucide-react';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -28,16 +29,9 @@ function PlanFormDialog({ plan, open, onOpenChange }: { plan?: Plan; open: boole
   const updatePlan = useUpdatePlan();
   const isEdit = !!plan;
 
-  const { register, handleSubmit, formState: { errors } } = useForm<PlanForm>({
+  const { register, handleSubmit, reset, formState: { errors } } = useForm<PlanForm>({
     resolver: zodResolver(planSchema),
-    defaultValues: plan ? {
-      name: plan.name,
-      description: plan.description || '',
-      price: plan.price,
-      patientLimit: plan.patientLimit,
-      prescriptionLimit: plan.prescriptionLimit,
-      duration: plan.duration,
-    } : {
+    defaultValues: {
       name: '',
       description: '',
       price: 0,
@@ -46,6 +40,26 @@ function PlanFormDialog({ plan, open, onOpenChange }: { plan?: Plan; open: boole
       duration: 30,
     },
   });
+
+  useEffect(() => {
+    if (open) {
+      reset(plan ? {
+        name: plan.name,
+        description: plan.description || '',
+        price: plan.price,
+        patientLimit: plan.patientLimit,
+        prescriptionLimit: plan.prescriptionLimit,
+        duration: plan.duration,
+      } : {
+        name: '',
+        description: '',
+        price: 0,
+        patientLimit: 50,
+        prescriptionLimit: 100,
+        duration: 30,
+      });
+    }
+  }, [plan, open, reset]);
 
   const onSubmit = (data: PlanForm) => {
     const formatted = { ...data, description: data.description || undefined };
@@ -113,6 +127,7 @@ export default function AdminPlansPage() {
   const deletePlan = useDeletePlan();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingPlan, setEditingPlan] = useState<Plan | undefined>();
+  const [deleteTarget, setDeleteTarget] = useState<Plan | null>(null);
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -127,6 +142,21 @@ export default function AdminPlansPage() {
       </div>
 
       <PlanFormDialog plan={editingPlan} open={dialogOpen} onOpenChange={setDialogOpen} />
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(v) => { if (!v) setDeleteTarget(null); }}
+        title="Delete Plan"
+        message={`Are you sure you want to delete "${deleteTarget?.name}"? This action cannot be undone.`}
+        confirmLabel="Delete"
+        variant="destructive"
+        loading={deletePlan.isPending}
+        onConfirm={() => {
+          if (deleteTarget) {
+            deletePlan.mutate(deleteTarget.id, { onSuccess: () => setDeleteTarget(null) });
+          }
+        }}
+      />
 
       {isLoading ? (
         <div className="space-y-3">
@@ -176,7 +206,7 @@ export default function AdminPlansPage() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => deletePlan.mutate(plan.id)}
+                        onClick={() => setDeleteTarget(plan)}
                       >
                         <Trash2 className="h-4 w-4 text-red-500" />
                       </Button>

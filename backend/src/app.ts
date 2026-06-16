@@ -19,6 +19,7 @@ import notificationRoutes from './modules/notification/route';
 import subscriptionRoutes from './modules/subscription/route';
 import mrRoutes from './modules/mr/route';
 import planRoutes from './modules/plan/route';
+import adminRoutes from './modules/admin/route';
 
 const app = express();
 
@@ -65,6 +66,7 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/stats', subscriptionRoutes);
 app.use('/api/mr', mrRoutes);
 app.use('/api/plans', planRoutes);
+app.use('/api/admin', adminRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

@@ -10,28 +10,46 @@ export const Header = () => {
   useEffect(() => { setMounted(true); }, []);
 
   const user = mounted ? getUser() : null;
-  const isAdmin = user?.role === 'SUPER_ADMIN';
+  const role = user?.role;
+
+  const roleConfig: Record<string, { name: string; title: string; icon: React.ReactNode; initial: string }> = {
+    SUPER_ADMIN: {
+      name: 'Admin',
+      title: 'System Administrator',
+      icon: <Shield className="h-4 w-4" />,
+      initial: 'A',
+    },
+    DOCTOR: {
+      name: user?.doctor?.fullName?.split(' ')[0] || 'Doctor',
+      title: user?.doctor?.specialization || 'Doctor',
+      icon: null,
+      initial: user?.doctor?.fullName?.charAt(0) || 'D',
+    },
+    MEDICAL_REPRESENTATIVE: {
+      name: user?.mr?.fullName?.split(' ')[0] || 'MR',
+      title: 'Medical Representative',
+      icon: null,
+      initial: user?.mr?.fullName?.charAt(0) || 'M',
+    },
+    RECEPTIONIST: {
+      name: user?.email?.split('@')[0] || 'User',
+      title: 'Receptionist',
+      icon: null,
+      initial: user?.email?.charAt(0).toUpperCase() || 'R',
+    },
+  };
+
+  const config = roleConfig[role as string] || roleConfig.RECEPTIONIST;
 
   return (
     <header className="sticky top-0 z-30 bg-white/70 dark:bg-gray-950/70 backdrop-blur-xl border-b border-gray-100 dark:border-gray-800/50">
       <div className="flex items-center justify-between px-6 h-16">
         <div className="flex items-center gap-4">
           <div className="hidden lg:block">
-            {isAdmin ? (
-              <>
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  Welcome back, <span className="text-gradient">Admin</span>
-                </h2>
-                <p className="text-xs text-muted-foreground">System Administrator</p>
-              </>
-            ) : (
-              <>
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  Welcome back, <span className="text-gradient">{user?.doctor?.fullName?.split(' ')[0] || 'Doctor'}</span>
-                </h2>
-                <p className="text-xs text-muted-foreground">{user?.doctor?.specialization || ''}</p>
-              </>
-            )}
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+              Welcome back, <span className="text-gradient">{config.name}</span>
+            </h2>
+            <p className="text-xs text-muted-foreground">{config.title}</p>
           </div>
         </div>
 
@@ -43,7 +61,7 @@ export const Header = () => {
             </span>
           </button>
           <div className="w-9 h-9 rounded-xl gradient-primary shadow-glow flex items-center justify-center text-white text-sm font-semibold">
-            {isAdmin ? <Shield className="h-4 w-4" /> : (user?.doctor?.fullName?.charAt(0) || 'D')}
+            {config.icon || config.initial}
           </div>
         </div>
       </div>

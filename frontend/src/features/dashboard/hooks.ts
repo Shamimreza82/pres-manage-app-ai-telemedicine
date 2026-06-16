@@ -1,4 +1,5 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import * as dashboardApi from './api';
 
 export const dashboardKeys = {
@@ -50,3 +51,17 @@ export const useAdminLogs = (params?: { page?: number; limit?: number; search?: 
     queryKey: [...dashboardKeys.admin, 'logs', params],
     queryFn: () => dashboardApi.getAdminLogs(params),
   });
+
+export const useToggleUserStatus = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: dashboardApi.toggleUserStatus,
+    onSuccess: (data) => {
+      toast.success(data.message);
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.adminUsers });
+    },
+    onError: (err: any) => {
+      toast.error(err.response?.data?.message || 'Failed to update user status');
+    },
+  });
+};

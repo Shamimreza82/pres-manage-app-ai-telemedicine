@@ -36,7 +36,7 @@ export default function DoctorPrescriptionsPage() {
 
   const { data, isLoading } = useDoctorPrescriptions(id, params);
 
-  const doctor = doctors?.find((d: any) => d.id === id);
+  const doctor = doctors?.data?.find((d: any) => d.id === id);
 
   const handleDatePreset = (preset: 'all' | 'today' | 'custom') => {
     setDatePreset(preset);

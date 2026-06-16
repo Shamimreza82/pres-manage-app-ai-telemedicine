@@ -60,7 +60,20 @@ async function main() {
     },
   });
 
-  console.log('Plans seeded: Free, Basic, Premium');
+  const yearlyPlan = await prisma.plan.upsert({
+    where: { name: 'Yearly' },
+    update: {},
+    create: {
+      name: 'Yearly',
+      description: 'Best value — full year of premium features',
+      price: 999,
+      patientLimit: 999999,
+      prescriptionLimit: 999999,
+      duration: 365,
+    },
+  });
+
+  console.log('Plans seeded: Free, Basic, Premium, Yearly');
 
   const doctorPassword = await bcrypt.hash('doctor123', 12);
   const doctorUser = await prisma.user.upsert({

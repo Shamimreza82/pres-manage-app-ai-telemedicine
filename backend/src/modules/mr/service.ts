@@ -72,10 +72,11 @@ export const assignDoctors = async (mrId: string, input: AssignDoctorsInput) => 
   return repo.findMrById(mrId);
 };
 
-export const getMyDoctors = async (userId: string) => {
+export const getMyDoctors = async (userId: string, query: Request['query']) => {
   const mr = await repo.findMrByUserId(userId);
   if (!mr) throw notFound('MR profile not found');
-  return mr.doctors.map((d) => d.doctor);
+  const pagination = getPaginationParams(query);
+  return repo.getMyDoctorsPaginated(mr.id, pagination);
 };
 
 export const getDoctorPatients = async (mrUserId: string, doctorId: string) => {

@@ -13,4 +13,6 @@ export const useAuthGuard = () => {
   }, [router]);
 };
 
+export const useAdminGuard = useAuthGuard;
+
 export const useCurrentUser = () => getUser();

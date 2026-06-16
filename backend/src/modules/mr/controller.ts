@@ -70,8 +70,10 @@ export const assignDoctors = async (req: AuthRequest, res: Response, next: NextF
 
 export const getMyDoctors = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    const doctors = await mrService.getMyDoctors(req.user!.userId);
-    sendSuccess(res, doctors);
+    const [doctors, total] = await mrService.getMyDoctors(req.user!.userId, req.query);
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 20;
+    sendPaginated(res, doctors, total, page, limit);
   } catch (error) {
     next(error);
   }

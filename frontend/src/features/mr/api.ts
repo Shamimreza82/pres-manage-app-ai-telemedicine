@@ -1,7 +1,7 @@
 import { api } from '@/lib/axios';
 
-export const getMyDoctors = () =>
-  api.get('/mr/doctors').then((r) => r.data.data);
+export const getMyDoctors = (params?: { page?: number; limit?: number; search?: string }) =>
+  api.get('/mr/doctors', { params }).then((r) => r.data);
 
 export const getDoctorPatients = (doctorId: string) =>
   api.get(`/mr/doctors/${doctorId}/patients`).then((r) => r.data.data);
