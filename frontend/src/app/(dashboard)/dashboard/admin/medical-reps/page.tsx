@@ -34,7 +34,7 @@ export default function AdminMedicalRepsPage() {
   const [selectedDoctors, setSelectedDoctors] = useState<string[]>([]);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
-  const { data, isLoading } = useMrs({ page, limit: 10, search });
+  const { data, isLoading, isFetching } = useMrs({ page, limit: 10, search });
   const createMr = useCreateMr();
   const deleteMr = useDeleteMr();
   const assignDoctors = useAssignDoctors();
@@ -139,10 +139,15 @@ export default function AdminMedicalRepsPage() {
 
       <SearchBar value={search} onChange={(v) => { setSearch(v); setPage(1); }} />
 
-      {isLoading ? (
+      {isLoading && !data ? (
         <div className="space-y-3">{[1, 2, 3].map(i => <div key={i} className="h-12 bg-gray-200 dark:bg-gray-800 rounded-lg animate-pulse" />)}</div>
       ) : (
-        <div className="premium-card-static overflow-hidden">
+        <div className="premium-card-static overflow-hidden relative">
+          {isFetching && (
+            <div className="absolute inset-0 bg-white/50 dark:bg-gray-950/50 z-10 flex items-start justify-center pt-12">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-teal-500" />
+            </div>
+          )}
           <Table>
             <TableHeader>
               <TableRow>
@@ -169,23 +174,7 @@ export default function AdminMedicalRepsPage() {
                     <TableCell>{mr.user?.email}</TableCell>
                     <TableCell>{mr.phone}</TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="secondary" className="text-xs shrink-0">{mr.doctors?.length || 0}</Badge>
-                        <div className="flex flex-wrap gap-1">
-                          {mr.doctors?.length === 0 ? (
-                            <span className="text-xs text-muted-foreground">None</span>
-                          ) : (
-                            mr.doctors?.slice(0, 2).map((d: any) => (
-                              <Badge key={d.id} variant="outline" className="text-xs">
-                                {d.doctor.fullName}
-                              </Badge>
-                            ))
-                          )}
-                          {mr.doctors?.length > 2 && (
-                            <Badge variant="secondary" className="text-xs">+{mr.doctors.length - 2}</Badge>
-                          )}
-                        </div>
-                      </div>
+                      <Badge variant="secondary" className="text-xs">{mr.doctors?.length || 0} doctors</Badge>
                     </TableCell>
                     <TableCell>
                       <Badge variant={mr.user?.isActive ? 'success' : 'destructive'}>

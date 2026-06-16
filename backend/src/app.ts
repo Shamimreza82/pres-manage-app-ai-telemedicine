@@ -18,6 +18,7 @@ import appointmentRoutes from './modules/appointment/route';
 import notificationRoutes from './modules/notification/route';
 import subscriptionRoutes from './modules/subscription/route';
 import mrRoutes from './modules/mr/route';
+import receptionistRoutes from './modules/receptionist/route';
 import planRoutes from './modules/plan/route';
 import adminRoutes from './modules/admin/route';
 
@@ -65,6 +66,7 @@ app.use('/api/appointments', appointmentRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/stats', subscriptionRoutes);
 app.use('/api/mr', mrRoutes);
+app.use('/api/receptionist', receptionistRoutes);
 app.use('/api/plans', planRoutes);
 app.use('/api/admin', adminRoutes);
 

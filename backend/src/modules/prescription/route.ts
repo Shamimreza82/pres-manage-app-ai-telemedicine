@@ -1,12 +1,12 @@
 import { Router } from 'express';
-import { authenticate } from '../../middlewares/auth';
+import { authenticate, authorize } from '../../middlewares/auth';
 import { validateBody } from '../../middlewares/validate';
 import { createPrescriptionSchema, updatePrescriptionSchema } from './validation';
 import * as prescriptionController from './controller';
 
 const router = Router();
 
-router.use(authenticate);
+router.use(authenticate, authorize('DOCTOR'));
 
 router.post('/', validateBody(createPrescriptionSchema), prescriptionController.create);
 router.get('/', prescriptionController.findAll);

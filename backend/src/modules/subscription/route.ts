@@ -14,7 +14,7 @@ router.get('/admin/doctors', authorize('SUPER_ADMIN'), subscriptionController.ge
 router.get('/admin/users', authorize('SUPER_ADMIN'), subscriptionController.getAdminUsers);
 router.get('/admin/subscriptions', authorize('SUPER_ADMIN'), subscriptionController.getAdminSubscriptions);
 router.get('/admin/patients', authorize('SUPER_ADMIN'), subscriptionController.getAdminPatients);
-router.get('/my', subscriptionController.getMySubscription);
+router.get('/my', authorize('DOCTOR'), subscriptionController.getMySubscription);
 router.get('/logs', authorize('SUPER_ADMIN'), subscriptionController.getLogs);
 router.post('/activate', authorize('DOCTOR'), validateBody(z.object({ planId: z.string().uuid() })), subscriptionController.activate);
 

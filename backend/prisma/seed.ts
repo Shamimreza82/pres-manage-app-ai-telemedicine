@@ -222,6 +222,28 @@ async function main() {
   }
 
   console.log('MR created:', mrUser.email);
+
+  const recPassword = await bcrypt.hash('rec123', 12);
+  const recUser = await prisma.user.upsert({
+    where: { email: 'receptionist@example.com' },
+    update: {},
+    create: {
+      email: 'receptionist@example.com',
+      password: recPassword,
+      role: 'RECEPTIONIST',
+      isVerified: true,
+      isActive: true,
+      receptionist: {
+        create: {
+          fullName: 'Sarah Johnson',
+          phone: '+8801700000003',
+          doctorId: doctorUser.doctor!.id,
+        },
+      },
+    },
+  });
+
+  console.log('Receptionist created:', recUser.email);
   console.log('Seeding complete!');
 }
 

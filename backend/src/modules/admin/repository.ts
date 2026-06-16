@@ -122,6 +122,11 @@ export const findAllDoctors = (pagination: PaginationParams, filters: { status?:
         user: { select: { id: true, email: true, isActive: true, isVerified: true, createdAt: true } },
         subscription: true,
         _count: { select: { patients: true, prescriptions: true, appointments: true } },
+        mrAssignments: {
+          include: {
+            mr: { select: { id: true, fullName: true, phone: true } },
+          },
+        },
       },
       orderBy: { createdAt: 'desc' },
     }),
@@ -130,7 +135,20 @@ export const findAllDoctors = (pagination: PaginationParams, filters: { status?:
 };
 
 export const findUserById = (userId: string) =>
-  db.user.findUnique({ where: { id: userId }, include: { doctor: true } });
+  db.user.findUnique({
+    where: { id: userId },
+    include: {
+      doctor: {
+        include: {
+          subscription: { include: { plan: true, payments: true } },
+          _count: { select: { patients: true, prescriptions: true, appointments: true } },
+        },
+      },
+      receptionist: true,
+      mr: true,
+      _count: { select: { auditLogs: true, notifications: true } },
+    },
+  });
 
 export const updateUserStatus = (userId: string, isActive: boolean) =>
   db.user.update({ where: { id: userId }, data: { isActive } });
@@ -183,3 +201,6 @@ export const updatePlan = (id: string, data: { name?: string; description?: stri
 
 export const deletePlan = (id: string) =>
   db.plan.delete({ where: { id } });
+
+export const clearDoctorMrAssignments = (doctorId: string) =>
+  db.doctorMrAssignment.deleteMany({ where: { doctorId } });

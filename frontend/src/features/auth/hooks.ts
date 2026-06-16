@@ -19,6 +19,8 @@ export const useLogin = () => {
         router.push('/dashboard/admin');
       } else if (data.data.user.role === 'MEDICAL_REPRESENTATIVE') {
         router.push('/dashboard/mr');
+      } else if (data.data.user.role === 'RECEPTIONIST') {
+        router.push('/dashboard/receptionist');
       } else {
         router.push('/dashboard/doctor');
       }
@@ -42,6 +44,8 @@ export const useRegister = () => {
         router.push('/dashboard/admin');
       } else if (data.data.user.role === 'MEDICAL_REPRESENTATIVE') {
         router.push('/dashboard/mr');
+      } else if (data.data.user.role === 'RECEPTIONIST') {
+        router.push('/dashboard/receptionist');
       } else {
         router.push('/dashboard/doctor');
       }

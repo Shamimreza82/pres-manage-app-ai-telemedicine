@@ -100,7 +100,7 @@ function NewPrescriptionForm() {
               </Select>
               <FieldError field="patientId" />
             </div>
-            <div className="grid grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <div className="space-y-1"><Label className="text-xs">BP</Label><Input placeholder="120/80" {...register('bloodPressure')} className={cn(errors.bloodPressure && 'border-red-500')} /></div>
               <div className="space-y-1"><Label className="text-xs">Pulse</Label><Input placeholder="72/min" {...register('pulseRate')} className={cn(errors.pulseRate && 'border-red-500')} /></div>
               <div className="space-y-1"><Label className="text-xs">Temp</Label><Input placeholder="98.6°F" {...register('temperature')} className={cn(errors.temperature && 'border-red-500')} /></div>

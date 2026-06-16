@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAdminUsers, useToggleUserStatus } from '@/features/dashboard/hooks';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -8,8 +9,10 @@ import { Button } from '@/components/ui/button';
 import { SearchBar } from '@/components/admin/DataTable';
 import { Pagination } from '@/components/ui/pagination';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { Eye } from 'lucide-react';
 
 export default function AdminUsersPage() {
+  const router = useRouter();
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const { data, isLoading } = useAdminUsers({ page, limit: 10, search });
@@ -69,15 +72,24 @@ export default function AdminUsersPage() {
                       <TableCell>{user.doctor?.fullName || '—'}</TableCell>
                       <TableCell className="text-muted-foreground text-xs">{new Date(user.createdAt).toLocaleDateString()}</TableCell>
                       <TableCell className="text-right">
-                        {user.role !== 'SUPER_ADMIN' && (
+                        <div className="flex items-center justify-end gap-1">
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => setToggleTarget({ id: user.id, email: user.email, isActive: user.isActive })}
+                            onClick={() => router.push(`/dashboard/admin/users/${user.id}`)}
                           >
-                            {user.isActive ? 'Deactivate' : 'Activate'}
+                            <Eye className="h-3.5 w-3.5 mr-1" /> Details
                           </Button>
-                        )}
+                          {user.role !== 'SUPER_ADMIN' && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setToggleTarget({ id: user.id, email: user.email, isActive: user.isActive })}
+                            >
+                              {user.isActive ? 'Deactivate' : 'Activate'}
+                            </Button>
+                          )}
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))

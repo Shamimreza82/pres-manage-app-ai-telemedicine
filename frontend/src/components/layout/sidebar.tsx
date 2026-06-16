@@ -17,6 +17,7 @@ const doctorMenu = [
   { href: '/patients', label: 'Patients', icon: Users, gradient: 'from-emerald-500 to-emerald-600' },
   { href: '/prescriptions', label: 'Prescriptions', icon: FileText, gradient: 'from-violet-500 to-violet-600' },
   { href: '/appointments', label: 'Appointments', icon: Calendar, gradient: 'from-amber-500 to-orange-500' },
+  { href: '/dashboard/doctor/receptionists', label: 'Receptionists', icon: UserRound, gradient: 'from-orange-500 to-orange-600' },
   {
     label: 'Settings', icon: Settings, gradient: 'from-purple-500 to-purple-600',
     children: [
@@ -49,6 +50,13 @@ const mrMenu = [
   { href: '/dashboard/mr/doctors', label: 'Doctors', icon: Stethoscope, gradient: 'from-emerald-500 to-emerald-600' },
 ];
 
+const recMenu = [
+  { href: '/dashboard/receptionist', label: 'Dashboard', icon: LayoutDashboard, gradient: 'from-orange-500 to-orange-600' },
+  { href: '/dashboard/receptionist/patients', label: 'Patients', icon: Users, gradient: 'from-emerald-500 to-emerald-600' },
+  { href: '/dashboard/receptionist/appointments', label: 'Appointments', icon: Calendar, gradient: 'from-amber-500 to-orange-500' },
+  { href: '/dashboard/receptionist/prescriptions', label: 'Prescriptions', icon: FileText, gradient: 'from-violet-500 to-violet-600' },
+];
+
 interface MenuItem {
   href?: string;
   label: string;
@@ -59,6 +67,7 @@ interface MenuItem {
 
 export const Sidebar = () => {
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({});
   const pathname = usePathname();
@@ -67,6 +76,13 @@ export const Sidebar = () => {
 
   useEffect(() => { setMounted(true); }, []);
 
+  // Close sidebar on mobile when route changes
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
+
+  const closeMobile = () => setMobileOpen(false);
+
   const toggleMenu = (label: string) => {
     setExpandedMenus((prev) => ({ ...prev, [label]: !prev[label] }));
   };
@@ -74,7 +90,8 @@ export const Sidebar = () => {
   const user = mounted ? getUser() : null;
   const isAdmin = user?.role === 'SUPER_ADMIN';
   const isMr = user?.role === 'MEDICAL_REPRESENTATIVE';
-  const menuItems: MenuItem[] = isAdmin ? adminMenu : isMr ? mrMenu : doctorMenu;
+  const isRec = user?.role === 'RECEPTIONIST';
+  const menuItems: MenuItem[] = isAdmin ? adminMenu : isMr ? mrMenu : isRec ? recMenu : doctorMenu;
 
   const renderMenuItem = (item: MenuItem) => {
     if (item.children) {
@@ -131,8 +148,8 @@ export const Sidebar = () => {
     }
 
     const Icon = item.icon;
-    const isActive = isAdmin || isMr
-      ? pathname === item.href || (item.href !== '/dashboard/admin' && item.href !== '/dashboard/mr' && pathname.startsWith(item.href + '/'))
+    const isActive = isAdmin || isMr || isRec
+      ? pathname === item.href || (item.href !== '/dashboard/admin' && item.href !== '/dashboard/mr' && item.href !== '/dashboard/receptionist' && pathname.startsWith(item.href + '/'))
       : pathname === item.href || pathname.startsWith(item.href + '/');
     return (
       <div key={`${item.href}-${item.label}`} title={collapsed ? item.label : undefined}>
@@ -159,14 +176,34 @@ export const Sidebar = () => {
   return (
     <>
       {/* Mobile overlay */}
-      {!collapsed && (
-        <div className="fixed inset-0 z-40 bg-black/40 lg:hidden" onClick={() => setCollapsed(true)} />
+      {mobileOpen && (
+        <div className="fixed inset-0 z-40 bg-black/40 lg:hidden" onClick={closeMobile} />
       )}
+
+      {/* Hamburger button (visible on mobile) */}
+      <button
+        onClick={() => setMobileOpen(!mobileOpen)}
+        className={cn(
+          'fixed top-3 z-50 lg:hidden w-10 h-10 rounded-xl bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-700 shadow-lg flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-900 transition-all duration-300',
+          mobileOpen ? 'left-[228px]' : 'left-3'
+        )}
+        aria-label="Toggle menu"
+      >
+        <svg className="h-5 w-5 text-gray-700 dark:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          {mobileOpen ? (
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+          ) : (
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+          )}
+        </svg>
+      </button>
 
       <aside
         className={cn(
           'fixed lg:static inset-y-0 left-0 z-50 flex flex-col bg-white dark:bg-gray-950 border-r border-gray-100 dark:border-gray-800/50 min-h-screen transition-all duration-300',
-          collapsed ? 'w-[72px]' : 'w-[260px]'
+          mobileOpen ? 'translate-x-0' : '-translate-x-full',
+          'lg:translate-x-0',
+          collapsed && !mobileOpen ? 'w-[72px]' : 'w-[260px]'
         )}
       >
         {/* Brand */}
@@ -174,17 +211,17 @@ export const Sidebar = () => {
           {!collapsed && (
             <div className="flex items-center gap-3 min-w-0">
               <div className="w-9 h-9 rounded-xl gradient-primary shadow-glow flex items-center justify-center shrink-0">
-                {isAdmin ? <Shield className="h-5 w-5 text-white" /> : isMr ? <UserRound className="h-5 w-5 text-white" /> : <Stethoscope className="h-5 w-5 text-white" />}
+                {isAdmin ? <Shield className="h-5 w-5 text-white" /> : isMr ? <UserRound className="h-5 w-5 text-white" /> : isRec ? <Users className="h-5 w-5 text-white" /> : <Stethoscope className="h-5 w-5 text-white" />}
               </div>
               <div className="truncate">
                 <h1 className="text-lg font-bold text-gray-900 dark:text-white truncate">PresManage</h1>
-                <p className="text-xs text-muted-foreground truncate">{isAdmin ? 'Admin Portal' : isMr ? 'MR Portal' : (user?.doctor?.clinicName || 'Doctor Portal')}</p>
+                <p className="text-xs text-muted-foreground truncate">{isAdmin ? 'Admin Portal' : isMr ? 'MR Portal' : isRec ? 'Reception Portal' : (user?.doctor?.clinicName || 'Doctor Portal')}</p>
               </div>
             </div>
           )}
           {collapsed && (
             <div className="w-9 h-9 rounded-xl gradient-primary shadow-glow flex items-center justify-center">
-              {isAdmin ? <Shield className="h-5 w-5 text-white" /> : isMr ? <UserRound className="h-5 w-5 text-white" /> : <Stethoscope className="h-5 w-5 text-white" />}
+              {isAdmin ? <Shield className="h-5 w-5 text-white" /> : isMr ? <UserRound className="h-5 w-5 text-white" /> : isRec ? <Users className="h-5 w-5 text-white" /> : <Stethoscope className="h-5 w-5 text-white" />}
             </div>
           )}
           <button

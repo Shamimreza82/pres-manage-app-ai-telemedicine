@@ -1,10 +1,10 @@
 import { db } from '../../config/database';
 
 export const findUserByEmail = (email: string) =>
-  db.user.findUnique({ where: { email }, include: { doctor: true, mr: true } });
+  db.user.findUnique({ where: { email }, include: { doctor: true, mr: true, receptionist: { include: { doctor: true } } } });
 
 export const findUserById = (id: string) =>
-  db.user.findUnique({ where: { id }, include: { doctor: true, mr: true } });
+  db.user.findUnique({ where: { id }, include: { doctor: true, mr: true, receptionist: { include: { doctor: true } } } });
 
 export const createUser = (data: {
   email: string;

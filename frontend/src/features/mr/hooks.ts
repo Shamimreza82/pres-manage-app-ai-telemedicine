@@ -71,7 +71,8 @@ export const useCreateMr = () => {
     mutationFn: mrApi.createMr,
     onSuccess: () => {
       toast.success('Medical Representative created successfully');
-      qc.invalidateQueries({ queryKey: mrKeys.mrs });
+      qc.invalidateQueries({ queryKey: mrKeys.mrs, refetchType: 'all' });
+      qc.invalidateQueries({ queryKey: mrKeys.availableDoctors });
     },
     onError: (err: any) => toast.error(err.response?.data?.message || 'Failed to create MR'),
   });

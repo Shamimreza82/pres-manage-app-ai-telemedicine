@@ -11,11 +11,14 @@ router.get('/dashboard', adminController.getDashboardStats);
 router.get('/doctors', adminController.listDoctors);
 router.patch('/doctors/:userId/approve', adminController.approveDoctor);
 router.patch('/doctors/:userId/status', adminController.toggleDoctorStatus);
+router.get('/users/:userId', adminController.getUser);
 router.patch('/users/:userId/status', adminController.toggleUserStatus);
 router.delete('/doctors/:userId', adminController.deleteDoctor);
 router.post('/doctors/:userId/reset-password', adminController.resetDoctorPassword);
 router.get('/subscriptions', adminController.listSubscriptions);
 router.patch('/subscriptions/:id', adminController.updateSubscription);
+
+router.post('/doctors/:doctorId/clear-mr', adminController.clearDoctorMrAssignments);
 
 router.get('/plans', adminController.listPlans);
 router.get('/plans/:id', adminController.getPlan);

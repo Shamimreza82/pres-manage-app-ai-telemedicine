@@ -73,7 +73,7 @@ export default function ProfilePage() {
         <CardHeader><CardTitle>Clinic & Chamber Information</CardTitle></CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Full Name</Label>
                 <Input value={profile?.fullName || ''} onChange={(e) => update('fullName', e.target.value)} className="h-11 premium-input" />
@@ -133,29 +133,31 @@ export default function ProfilePage() {
               </div>
               <div className="space-y-3">
                 {(profile?.chamberSchedule || []).map((slot: any, idx: number) => (
-                  <div key={idx} className="flex items-center gap-3">
+                  <div key={idx} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
                     <select
                       value={slot.day}
                       onChange={(e) => updateSchedule(idx, 'day', e.target.value)}
-                      className="premium-input h-10 px-3 text-sm bg-white dark:bg-gray-900 flex-1"
+                      className="premium-input h-10 px-3 text-sm bg-white dark:bg-gray-900 sm:flex-1"
                     >
                       <option value="">Select day</option>
                       {DAYS.map((d) => <option key={d} value={d}>{d}</option>)}
                     </select>
-                    <input
-                      type="time"
-                      value={slot.startTime}
-                      onChange={(e) => updateSchedule(idx, 'startTime', e.target.value)}
-                      className="premium-input h-10 px-3 text-sm"
-                    />
-                    <span className="text-xs text-muted-foreground">to</span>
-                    <input
-                      type="time"
-                      value={slot.endTime}
-                      onChange={(e) => updateSchedule(idx, 'endTime', e.target.value)}
-                      className="premium-input h-10 px-3 text-sm"
-                    />
-                    <button type="button" onClick={() => removeSlot(idx)} className="text-red-500 hover:text-red-600 p-1">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="time"
+                        value={slot.startTime}
+                        onChange={(e) => updateSchedule(idx, 'startTime', e.target.value)}
+                        className="premium-input h-10 px-3 text-sm flex-1"
+                      />
+                      <span className="text-xs text-muted-foreground shrink-0">to</span>
+                      <input
+                        type="time"
+                        value={slot.endTime}
+                        onChange={(e) => updateSchedule(idx, 'endTime', e.target.value)}
+                        className="premium-input h-10 px-3 text-sm flex-1"
+                      />
+                    </div>
+                    <button type="button" onClick={() => removeSlot(idx)} className="text-red-500 hover:text-red-600 p-1 self-end sm:self-center">
                       <X className="h-4 w-4" />
                     </button>
                   </div>

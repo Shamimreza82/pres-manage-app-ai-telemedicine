@@ -11,6 +11,7 @@ const generateTokens = (payload: {
   role: string;
   doctorId?: string;
   mrId?: string;
+  receptionistId?: string;
 }): Tokens => ({
   accessToken: signAccessToken(payload),
   refreshToken: signRefreshToken(payload),
@@ -90,8 +91,9 @@ export const loginUser = async (input: LoginInput) => {
     userId: user.id,
     email: user.email,
     role: user.role,
-    doctorId: user.doctor?.id,
+    doctorId: user.doctor?.id || user.receptionist?.doctorId,
     mrId: user.mr?.id,
+    receptionistId: user.receptionist?.id,
   };
 
   const tokens = generateTokens(payload);
@@ -104,6 +106,7 @@ export const loginUser = async (input: LoginInput) => {
       role: user.role,
       doctor: user.doctor,
       mr: user.mr,
+      receptionist: user.receptionist,
     },
     tokens,
   };
@@ -119,8 +122,9 @@ export const refreshUserToken = async (token: string) => {
       userId: user.id,
       email: user.email,
       role: user.role,
-      doctorId: user.doctor?.id,
+      doctorId: user.doctor?.id || user.receptionist?.doctorId,
       mrId: user.mr?.id,
+      receptionistId: user.receptionist?.id,
     };
 
     const tokens = generateTokens(payload);

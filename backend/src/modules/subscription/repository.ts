@@ -99,6 +99,11 @@ export const getAllDoctorsForAdmin = (pagination: { skip: number; limit: number;
         user: { select: { id: true, email: true, isActive: true, isVerified: true, createdAt: true } },
         subscription: true,
         _count: { select: { patients: true, prescriptions: true, appointments: true } },
+        mrAssignments: {
+          include: {
+            mr: { select: { id: true, fullName: true, phone: true } },
+          },
+        },
       },
       orderBy: { createdAt: 'desc' },
     }),

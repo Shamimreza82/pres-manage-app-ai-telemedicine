@@ -77,3 +77,13 @@ export const deletePlan = catchAsync(async (req: AuthRequest, res) => {
   await adminService.removePlan(req.params.id as string);
   sendSuccess(res, { message: 'Plan deleted successfully' });
 });
+
+export const getUser = catchAsync(async (req: AuthRequest, res) => {
+  const user = await adminService.getUser(req.params.userId as string);
+  sendSuccess(res, user);
+});
+
+export const clearDoctorMrAssignments = catchAsync(async (req: AuthRequest, res) => {
+  const result = await adminService.clearDoctorMrAssignments(req.params.doctorId as string);
+  sendSuccess(res, result);
+});

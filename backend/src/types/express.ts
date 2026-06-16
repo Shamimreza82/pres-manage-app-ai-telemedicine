@@ -6,6 +6,7 @@ export interface AuthPayload {
   role: string;
   doctorId?: string;
   mrId?: string;
+  receptionistId?: string;
 }
 
 export type AuthRequest = Request & { user?: AuthPayload };

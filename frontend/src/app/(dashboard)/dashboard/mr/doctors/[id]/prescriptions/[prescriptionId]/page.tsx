@@ -16,7 +16,7 @@ export default function PrescriptionDetailPage() {
   const { data: doctors } = useMyDoctors();
   const { data: rx, isLoading } = useDoctorPrescriptionById(doctorId, prescriptionId);
 
-  const doctor = doctors?.find((d: any) => d.id === doctorId);
+  const doctor = doctors?.data?.find((d: any) => d.id === doctorId);
 
   const handleDownload = async () => {
     try {
@@ -179,7 +179,7 @@ export default function PrescriptionDetailPage() {
           <div className="border-t border-gray-100 dark:border-gray-800" />
           <div>
             <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Medicines</h3>
-            <div className="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
+              <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-gray-50 dark:bg-gray-900">

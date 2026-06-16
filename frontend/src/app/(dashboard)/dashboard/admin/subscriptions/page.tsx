@@ -38,10 +38,12 @@ export default function AdminSubscriptionsPage() {
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">All Subscriptions</h1>
         <p className="text-sm text-muted-foreground mt-1">Manage doctor subscription plans</p>
       </div>
-      <div className="flex items-center gap-3">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
         <div className="flex-1"><SearchBar value={search} onChange={(v) => { setSearch(v); setPage(1); }} /></div>
-        <FilterSelect value={planFilter} onChange={(v) => { setPlanFilter(v); setPage(1); }} options={planOptions} placeholder="All Plans" />
-        <FilterSelect value={statusFilter} onChange={(v) => { setStatusFilter(v); setPage(1); }} options={statusOptions} placeholder="All Status" />
+        <div className="flex gap-3">
+          <FilterSelect value={planFilter} onChange={(v) => { setPlanFilter(v); setPage(1); }} options={planOptions} placeholder="All Plans" />
+          <FilterSelect value={statusFilter} onChange={(v) => { setStatusFilter(v); setPage(1); }} options={statusOptions} placeholder="All Status" />
+        </div>
       </div>
 
       <ConfirmDialog

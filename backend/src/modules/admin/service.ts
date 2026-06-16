@@ -80,3 +80,14 @@ export const removePlan = async (id: string) => {
   if (!plan) throw notFound('Plan not found');
   return repo.deletePlan(id);
 };
+
+export const getUser = async (userId: string) => {
+  const user = await repo.findUserById(userId);
+  if (!user) throw notFound('User not found');
+  return user;
+};
+
+export const clearDoctorMrAssignments = async (doctorId: string) => {
+  await repo.clearDoctorMrAssignments(doctorId);
+  return { message: 'All MR assignments cleared for doctor' };
+};

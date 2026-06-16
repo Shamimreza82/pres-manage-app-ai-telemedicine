@@ -7,6 +7,7 @@ export const dashboardKeys = {
   admin: ['dashboard', 'admin'] as const,
   adminDoctors: ['dashboard', 'admin', 'doctors'] as const,
   adminUsers: ['dashboard', 'admin', 'users'] as const,
+  adminUser: (id: string) => ['dashboard', 'admin', 'users', id] as const,
   adminSubscriptions: ['dashboard', 'admin', 'subscriptions'] as const,
 };
 
@@ -51,6 +52,27 @@ export const useAdminLogs = (params?: { page?: number; limit?: number; search?: 
     queryKey: [...dashboardKeys.admin, 'logs', params],
     queryFn: () => dashboardApi.getAdminLogs(params),
   });
+
+export const useAdminUser = (userId: string) =>
+  useQuery({
+    queryKey: dashboardKeys.adminUser(userId),
+    queryFn: () => dashboardApi.getAdminUser(userId),
+    enabled: !!userId,
+  });
+
+export const useClearDoctorMrAssignments = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: dashboardApi.clearDoctorMrAssignments,
+    onSuccess: (data) => {
+      toast.success(data.message || 'MR assignments cleared');
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.adminDoctors });
+    },
+    onError: (err: any) => {
+      toast.error(err.response?.data?.message || 'Failed to clear MR assignments');
+    },
+  });
+};
 
 export const useToggleUserStatus = () => {
   const queryClient = useQueryClient();
