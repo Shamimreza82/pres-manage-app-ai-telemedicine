@@ -36,10 +36,18 @@ export const createAppointmentSchema = z.object({
   patientId: z.string().uuid('Invalid patient ID'),
   date: z.string().refine((v) => !isNaN(Date.parse(v)), 'Invalid date'),
   time: z.string().regex(/^\d{2}:\d{2}$/, 'Invalid time format (HH:mm)'),
+  fee: z.number().positive('Fee must be positive').optional(),
+  paymentStatus: z.enum(['PAID', 'UNPAID']).optional(),
+  paymentMethod: z.enum(['CASH', 'CARD', 'BKASH', 'NAGAD', 'ROCKET', 'OTHER']).optional(),
   notes: z.string().optional(),
 });
 
 export const updateAppointmentSchema = z.object({
   status: z.enum(['SCHEDULED', 'COMPLETED', 'CANCELLED', 'NO_SHOW']).optional(),
+  date: z.string().refine((v) => !isNaN(Date.parse(v)), 'Invalid date').optional(),
+  time: z.string().regex(/^\d{2}:\d{2}$/, 'Invalid time format (HH:mm)').optional(),
+  fee: z.number().positive().optional(),
+  paymentStatus: z.enum(['PAID', 'UNPAID']).optional(),
+  paymentMethod: z.enum(['CASH', 'CARD', 'BKASH', 'NAGAD', 'ROCKET', 'OTHER']).optional(),
   notes: z.string().optional(),
 });

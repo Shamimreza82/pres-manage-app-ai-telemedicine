@@ -75,6 +75,15 @@ export const getAppointments = async (req: AuthRequest, res: Response, next: Nex
   }
 };
 
+export const getAppointmentById = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const apt = await receptionistService.getAppointmentById(req.user!.userId, req.params.id as string);
+    sendSuccess(res, apt);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const getTodayAppointments = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const appointments = await receptionistService.getTodayAppointments(req.user!.userId);

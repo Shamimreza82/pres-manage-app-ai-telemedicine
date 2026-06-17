@@ -46,8 +46,11 @@ export interface Appointment {
   date: string;
   time: string;
   status: string;
+  fee?: number;
+  paymentStatus?: string;
+  paymentMethod?: string;
   notes?: string;
-  patient?: { id: string; fullName: string; patientId: string };
+  patient?: { id: string; fullName: string; patientId: string; age?: number; gender?: string; phone?: string };
 }
 
 export interface Prescription {

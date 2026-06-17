@@ -30,8 +30,9 @@ router.get('/patients/:id', authorize('RECEPTIONIST'), receptionistController.ge
 router.put('/patients/:id', authorize('RECEPTIONIST'), validateBody(updatePatientSchema), receptionistController.updatePatient);
 
 router.get('/appointments', authorize('RECEPTIONIST'), receptionistController.getAppointments);
-router.post('/appointments', authorize('RECEPTIONIST'), validateBody(createAppointmentSchema), receptionistController.createAppointment);
 router.get('/appointments/today', authorize('RECEPTIONIST'), receptionistController.getTodayAppointments);
+router.get('/appointments/:id', authorize('RECEPTIONIST'), receptionistController.getAppointmentById);
+router.post('/appointments', authorize('RECEPTIONIST'), validateBody(createAppointmentSchema), receptionistController.createAppointment);
 router.patch('/appointments/:id', authorize('RECEPTIONIST'), validateBody(updateAppointmentSchema), receptionistController.updateAppointment);
 
 router.get('/prescriptions', authorize('RECEPTIONIST'), receptionistController.getPrescriptions);

@@ -160,6 +160,7 @@ model Patient {
   prescriptions    Prescription[]
   appointments     Appointment[]
 
+  @@unique([doctorId, phone])
   @@map("patients")
 }
 
@@ -226,6 +227,9 @@ model Appointment {
   date          DateTime
   time          String
   status        AppointmentStatus @default(SCHEDULED)
+  fee           Float?
+  paymentStatus String            @default("UNPAID")    @map("payment_status")
+  paymentMethod String?                                  @map("payment_method")
   notes         String?
   createdAt     DateTime          @default(now())        @map("created_at")
   updatedAt     DateTime          @updatedAt             @map("updated_at")

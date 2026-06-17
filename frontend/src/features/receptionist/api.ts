@@ -19,14 +19,21 @@ export const updatePatient = (id: string, data: Partial<CreatePatientInput>) =>
 export const getAppointments = (params?: Record<string, string>) =>
   api.get<PaginatedResponse<Appointment>>('/receptionist/appointments', { params }).then((r) => r.data);
 
+export const getAppointment = (id: string) =>
+  api.get<{ success: boolean; data: Appointment }>(`/receptionist/appointments/${id}`).then((r) => r.data.data);
+
 export const getTodayAppointments = () =>
   api.get<{ success: boolean; data: Appointment[] }>('/receptionist/appointments/today').then((r) => r.data.data);
 
-export const createAppointment = (data: { patientId: string; date: string; time: string; notes?: string }) =>
-  api.post('/receptionist/appointments', data).then((r) => r.data);
+export const createAppointment = (data: {
+  patientId: string; date: string; time: string;
+  fee?: number; paymentStatus?: string; paymentMethod?: string; notes?: string;
+}) => api.post('/receptionist/appointments', data).then((r) => r.data);
 
-export const updateAppointment = (id: string, data: { status?: string; notes?: string }) =>
-  api.patch(`/receptionist/appointments/${id}`, data).then((r) => r.data);
+export const updateAppointment = (id: string, data: {
+  status?: string; date?: string; time?: string;
+  fee?: number; paymentStatus?: string; paymentMethod?: string; notes?: string;
+}) => api.patch(`/receptionist/appointments/${id}`, data).then((r) => r.data);
 
 export const getPrescriptions = (params?: Record<string, string>) =>
   api.get<PaginatedResponse<Prescription>>('/receptionist/prescriptions', { params }).then((r) => r.data);

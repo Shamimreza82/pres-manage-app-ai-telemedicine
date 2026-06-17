@@ -52,9 +52,23 @@ export const updatePatient = (id: string, doctorId: string, data: any) =>
     data: data as any,
   });
 
-export const findAppointmentsByDoctor = (doctorId: string, pagination: PaginationParams, status?: string) => {
+export const findAppointmentsByDoctor = (doctorId: string, pagination: PaginationParams, status?: string, search?: string, dateFrom?: string, dateTo?: string) => {
   const where: any = { doctorId };
   if (status) where.status = status;
+  if (dateFrom || dateTo) {
+    where.date = {};
+    if (dateFrom) where.date.gte = new Date(dateFrom);
+    if (dateTo) where.date.lte = new Date(dateTo + 'T23:59:59.999Z');
+  }
+  if (search) {
+    where.patient = {
+      OR: [
+        { fullName: { contains: search, mode: 'insensitive' } },
+        { phone: { contains: search } },
+        { patientId: { contains: search, mode: 'insensitive' } },
+      ],
+    };
+  }
 
   return Promise.all([
     db.appointment.findMany({
@@ -62,17 +76,25 @@ export const findAppointmentsByDoctor = (doctorId: string, pagination: Paginatio
       orderBy: { date: 'desc' },
       skip: pagination.skip,
       take: pagination.limit,
-      include: { patient: { select: { id: true, fullName: true, patientId: true } } },
+      include: { patient: { select: { id: true, fullName: true, patientId: true, phone: true } } },
     }),
     db.appointment.count({ where }),
   ] as const);
 };
 
 export const findAppointmentById = (id: string, doctorId: string) =>
-  db.appointment.findFirst({ where: { id, doctorId } });
+  db.appointment.findFirst({
+    where: { id, doctorId },
+    include: { patient: { select: { id: true, fullName: true, patientId: true, age: true, gender: true, phone: true } } },
+  });
 
 export const createAppointment = (data: any) =>
-  db.appointment.create({ data: data as any });
+  db.appointment.create({
+    data: {
+      ...data,
+      date: data.date ? new Date(data.date) : undefined,
+    },
+  });
 
 export const updateAppointment = (id: string, data: any) =>
   db.appointment.update({ where: { id }, data: data as any });

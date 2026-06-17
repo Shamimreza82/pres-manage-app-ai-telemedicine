@@ -9,13 +9,14 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { SearchBar } from '@/components/admin/DataTable';
 import { Pagination } from '@/components/ui/pagination';
-import { FileText, User, Download, Eye, Calendar } from 'lucide-react';
+import { FileText, User, Download, Eye, Calendar, MoreHorizontal } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 import { toast } from 'sonner';
 
 export default function RecPrescriptionsPage() {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
+  const [menuTarget, setMenuTarget] = useState<{ id: string; top: number; right: number } | null>(null);
   const params: any = { page, limit: '20', search };
   const { data, isLoading } = useRecPrescriptions(params);
 
@@ -34,7 +35,7 @@ export default function RecPrescriptionsPage() {
       {isLoading ? (
         <div className="space-y-3">{[1, 2, 3].map(i => <div key={i} className="h-12 bg-gray-200 dark:bg-gray-800 rounded-lg animate-pulse" />)}</div>
       ) : (
-        <div className="premium-card-static overflow-hidden">
+        <div className="premium-card-static">
           <Table>
             <TableHeader>
               <TableRow>
@@ -84,16 +85,16 @@ export default function RecPrescriptionsPage() {
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-1">
-                        <Link href={`/dashboard/receptionist/prescriptions/${rx.id}`}>
-                          <Button variant="ghost" size="sm">
-                            <Eye className="h-3.5 w-3.5" />
-                          </Button>
-                        </Link>
-                        <Button variant="ghost" size="sm" onClick={() => downloadPrescriptionPDF(rx.id)}>
-                          <Download className="h-3.5 w-3.5" />
-                        </Button>
-                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          const rect = (e.target as HTMLElement).closest('button')!.getBoundingClientRect();
+                          setMenuTarget(menuTarget?.id === rx.id ? null : { id: rx.id, top: rect.bottom + 4, right: window.innerWidth - rect.right });
+                        }}
+                      >
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))
@@ -104,6 +105,37 @@ export default function RecPrescriptionsPage() {
             <Pagination page={page} totalPages={data?.totalPages || 1} total={data?.total} onPageChange={setPage} />
           </div>
         </div>
+      )}
+
+      {/* Actions Menu */}
+      {menuTarget && data?.data && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setMenuTarget(null)} />
+          <div
+            className="fixed z-50 w-48 rounded-xl bg-white dark:bg-gray-950 border border-gray-100 dark:border-gray-800 shadow-strong py-1.5 animate-scale-in"
+            style={{ top: menuTarget.top, right: menuTarget.right }}
+          >
+            {(() => {
+              const rx = data.data.find((r: any) => r.id === menuTarget.id);
+              if (!rx) return null;
+              return (
+                <>
+                  <Link href={`/dashboard/receptionist/prescriptions/${rx.id}`} onClick={() => setMenuTarget(null)}>
+                    <button className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                      <Eye className="h-4 w-4 text-blue-500" /> View Details
+                    </button>
+                  </Link>
+                  <button
+                    onClick={() => { downloadPrescriptionPDF(rx.id); setMenuTarget(null); }}
+                    className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                  >
+                    <Download className="h-4 w-4 text-emerald-500" /> Download PDF
+                  </button>
+                </>
+              );
+            })()}
+          </div>
+        </>
       )}
     </div>
   );

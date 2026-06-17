@@ -14,6 +14,7 @@ export const recKeys = {
   appointments: {
     all: ['receptionist', 'appointments'] as const,
     list: (params?: Record<string, string>) => ['receptionist', 'appointments', 'list', params] as const,
+    detail: (id: string) => ['receptionist', 'appointments', id] as const,
   },
   prescriptions: {
     all: ['receptionist', 'prescriptions'] as const,
@@ -70,6 +71,13 @@ export const useRecAppointments = (params?: Record<string, string>) =>
   useQuery({
     queryKey: recKeys.appointments.list(params),
     queryFn: () => receptionistApi.getAppointments(params),
+  });
+
+export const useRecAppointment = (id: string) =>
+  useQuery({
+    queryKey: recKeys.appointments.detail(id),
+    queryFn: () => receptionistApi.getAppointment(id),
+    enabled: !!id,
   });
 
 export const useCreateRecAppointment = () => {

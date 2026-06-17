@@ -57,6 +57,14 @@ export const getPatientById = async (userId: string, patientId: string) => {
   return patient;
 };
 
+const checkDuplicatePhone = async (phone: string | undefined, doctorId: string, excludePatientId?: string) => {
+  if (!phone) return;
+  const existing = await db.patient.findFirst({
+    where: { phone, doctorId, ...(excludePatientId ? { id: { not: excludePatientId } } : {}) },
+  });
+  if (existing) throw badRequest('A patient with this phone number already exists under your account');
+};
+
 export const createPatientForDoctor = async (userId: string, input: any) => {
   const rec = await getReceptionistOrThrow(userId);
   const subscription = await repo.getSubscriptionByDoctor(rec.doctorId);
@@ -67,6 +75,7 @@ export const createPatientForDoctor = async (userId: string, input: any) => {
     throw badRequest('Patient limit reached. Upgrade your subscription.');
   }
 
+  await checkDuplicatePhone(input.phone, rec.doctorId);
   return repo.createPatient({ ...input, doctorId: rec.doctorId });
 };
 
@@ -74,6 +83,7 @@ export const updatePatientForDoctor = async (userId: string, patientId: string, 
   const rec = await getReceptionistOrThrow(userId);
   const patient = await repo.findPatientById(patientId, rec.doctorId);
   if (!patient) throw notFound('Patient not found');
+  await checkDuplicatePhone(input.phone, rec.doctorId, patientId);
   return repo.updatePatient(patientId, rec.doctorId, input);
 };
 
@@ -81,12 +91,22 @@ export const getAppointmentsByDoctor = async (userId: string, query: Request['qu
   const rec = await getReceptionistOrThrow(userId);
   const pagination = getPaginationParams(query);
   const status = query.status as string | undefined;
-  return repo.findAppointmentsByDoctor(rec.doctorId, pagination, status);
+  const search = query.search as string | undefined;
+  const dateFrom = query.dateFrom as string | undefined;
+  const dateTo = query.dateTo as string | undefined;
+  return repo.findAppointmentsByDoctor(rec.doctorId, pagination, status, search, dateFrom, dateTo);
 };
 
 export const getTodayAppointments = async (userId: string) => {
   const rec = await getReceptionistOrThrow(userId);
   return repo.findTodayAppointments(rec.doctorId);
+};
+
+export const getAppointmentById = async (userId: string, appointmentId: string) => {
+  const rec = await getReceptionistOrThrow(userId);
+  const apt = await repo.findAppointmentById(appointmentId, rec.doctorId);
+  if (!apt) throw notFound('Appointment not found');
+  return apt;
 };
 
 export const createAppointmentForDoctor = async (userId: string, input: any) => {
