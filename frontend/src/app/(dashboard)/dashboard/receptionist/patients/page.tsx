@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Pagination } from '@/components/ui/pagination';
-import { Plus, Search, Eye, Pencil, Users } from 'lucide-react';
+import { Plus, Search, MoreHorizontal, Eye, Pencil, Users } from 'lucide-react';
 import { toast } from 'sonner';
 
 const genderBadge = (g: string) => {
@@ -19,6 +19,7 @@ const genderBadge = (g: string) => {
 export default function RecPatientsPage() {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
+  const [menuTarget, setMenuTarget] = useState<{ id: string; top: number; right: number } | null>(null);
   const params = { page: String(page), limit: '20', search };
   const { data, isLoading, isError } = useRecPatients(params);
 
@@ -39,7 +40,7 @@ export default function RecPatientsPage() {
         </Link>
       </div>
 
-      <Card className="premium-card overflow-hidden">
+      <Card className="premium-card">
         <div className="p-4 border-b border-gray-100 dark:border-gray-800/50">
           <div className="relative max-w-sm">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -99,13 +100,16 @@ export default function RecPatientsPage() {
                           <span className="badge-gradient-blue">{patient._count?.prescriptions || 0}</span>
                         </td>
                         <td className="text-right">
-                          <div className="flex justify-end gap-1">
-                            <Link href={`/dashboard/receptionist/patients/${patient.id}/edit`}>
-                              <Button variant="ghost" size="icon" className="hover:bg-amber-50 dark:hover:bg-amber-950/30 rounded-lg">
-                                <Pencil className="h-4 w-4 text-muted-foreground" />
-                              </Button>
-                            </Link>
-                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => {
+                              const rect = (e.target as HTMLElement).closest('button')!.getBoundingClientRect();
+                              setMenuTarget(menuTarget?.id === patient.id ? null : { id: patient.id, top: rect.bottom + 4, right: window.innerWidth - rect.right });
+                            }}
+                          >
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
                         </td>
                       </tr>
                     ))}
@@ -125,6 +129,36 @@ export default function RecPatientsPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Actions Menu */}
+      {menuTarget && data?.data && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setMenuTarget(null)} />
+          <div
+            className="fixed z-50 w-48 rounded-xl bg-white dark:bg-gray-950 border border-gray-100 dark:border-gray-800 shadow-strong py-1.5 animate-scale-in"
+            style={{ top: menuTarget.top, right: menuTarget.right }}
+          >
+            {(() => {
+              const patient = data.data.find((p: any) => p.id === menuTarget.id);
+              if (!patient) return null;
+              return (
+                <>
+                  <Link href={`/dashboard/receptionist/patients/${patient.id}`} onClick={() => setMenuTarget(null)}>
+                    <button className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                      <Eye className="h-4 w-4 text-blue-500" /> View Details
+                    </button>
+                  </Link>
+                  <Link href={`/dashboard/receptionist/patients/${patient.id}/edit`} onClick={() => setMenuTarget(null)}>
+                    <button className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                      <Pencil className="h-4 w-4 text-amber-500" /> Edit Patient
+                    </button>
+                  </Link>
+                </>
+              );
+            })()}
+          </div>
+        </>
+      )}
     </div>
   );
 }

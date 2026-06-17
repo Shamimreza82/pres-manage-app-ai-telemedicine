@@ -225,3 +225,32 @@ export const deleteMyReceptionist = async (doctorUserId: string, receptionistId:
   await db.user.delete({ where: { id: rec.userId } });
   return { message: 'Receptionist deleted successfully' };
 };
+
+export const toggleMyReceptionistStatus = async (doctorUserId: string, receptionistId: string) => {
+  const doctor = await getDoctorOrThrow(doctorUserId);
+  const rec = await repo.findReceptionistById(receptionistId);
+  if (!rec) throw notFound('Receptionist not found');
+  if (rec.doctorId !== doctor.id) throw badRequest('This receptionist does not belong to you');
+  const user = await db.user.findUnique({ where: { id: rec.userId }, select: { isActive: true } });
+  if (!user) throw notFound('User not found');
+  const updated = await db.user.update({ where: { id: rec.userId }, data: { isActive: !user.isActive } });
+  return { isActive: updated.isActive, message: `Receptionist ${updated.isActive ? 'activated' : 'deactivated'} successfully` };
+};
+
+export const updateMyReceptionist = async (doctorUserId: string, receptionistId: string, input: { fullName?: string; phone?: string }) => {
+  const doctor = await getDoctorOrThrow(doctorUserId);
+  const rec = await repo.findReceptionistById(receptionistId);
+  if (!rec) throw notFound('Receptionist not found');
+  if (rec.doctorId !== doctor.id) throw badRequest('This receptionist does not belong to you');
+  return repo.updateReceptionist(receptionistId, input);
+};
+
+export const resetReceptionistPassword = async (doctorUserId: string, receptionistId: string, newPassword: string) => {
+  const doctor = await getDoctorOrThrow(doctorUserId);
+  const rec = await repo.findReceptionistById(receptionistId);
+  if (!rec) throw notFound('Receptionist not found');
+  if (rec.doctorId !== doctor.id) throw badRequest('This receptionist does not belong to you');
+  const hashed = await import('../../utils/password').then((m) => m.hashPassword(newPassword));
+  await db.user.update({ where: { id: rec.userId }, data: { password: hashed } });
+  return { message: 'Password reset successfully' };
+};

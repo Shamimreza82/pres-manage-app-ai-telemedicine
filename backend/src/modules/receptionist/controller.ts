@@ -214,3 +214,34 @@ export const deleteMyReceptionist = async (req: AuthRequest, res: Response, next
     next(error);
   }
 };
+
+export const toggleMyReceptionistStatus = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const result = await receptionistService.toggleMyReceptionistStatus(req.user!.userId, req.params.id as string);
+    await createAuditLog({ userId: req.user!.userId, action: 'UPDATE', entity: 'Receptionist', entityId: req.params.id as string, details: { isActive: result.isActive } });
+    sendSuccess(res, result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateMyReceptionist = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const result = await receptionistService.updateMyReceptionist(req.user!.userId, req.params.id as string, req.body);
+    await createAuditLog({ userId: req.user!.userId, action: 'UPDATE', entity: 'Receptionist', entityId: req.params.id as string });
+    sendSuccess(res, result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const resetReceptionistPassword = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const { newPassword } = req.body;
+    const result = await receptionistService.resetReceptionistPassword(req.user!.userId, req.params.id as string, newPassword);
+    await createAuditLog({ userId: req.user!.userId, action: 'UPDATE', entity: 'Receptionist', entityId: req.params.id as string, details: { action: 'reset_password' } });
+    sendSuccess(res, result);
+  } catch (error) {
+    next(error);
+  }
+};

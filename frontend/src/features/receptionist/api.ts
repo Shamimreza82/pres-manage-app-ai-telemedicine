@@ -53,5 +53,14 @@ export const getMyReceptionists = (params?: { page?: number; limit?: number; sea
 export const createReceptionistByDoctor = (data: { email: string; password: string; fullName: string; phone: string }) =>
   api.post('/receptionist/my', data).then((r) => r.data.data);
 
+export const toggleReceptionistStatus = (id: string) =>
+  api.patch(`/receptionist/my/${id}/toggle-status`).then((r) => r.data);
+
+export const updateReceptionistByDoctor = (id: string, data: { fullName?: string; phone?: string }) =>
+  api.put(`/receptionist/my/${id}`, data).then((r) => r.data.data);
+
 export const deleteReceptionistByDoctor = (id: string) =>
   api.delete(`/receptionist/my/${id}`).then((r) => r.data.data);
+
+export const resetReceptionistPassword = (id: string, newPassword: string) =>
+  api.post(`/receptionist/my/${id}/reset-password`, { newPassword }).then((r) => r.data);

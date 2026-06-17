@@ -133,6 +133,43 @@ export const useCreateReceptionistByDoctor = () => {
   });
 };
 
+export const useToggleReceptionistStatus = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: receptionistApi.toggleReceptionistStatus,
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: doctorRecKeys.all });
+      toast.success(data.message || 'Status updated');
+    },
+    onError: (err: any) => toast.error(err.response?.data?.message || 'Failed to toggle status'),
+  });
+};
+
+export const useUpdateReceptionistByDoctor = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: { fullName?: string; phone?: string } }) =>
+      receptionistApi.updateReceptionistByDoctor(id, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: doctorRecKeys.all });
+      toast.success('Receptionist updated');
+    },
+    onError: (err: any) => toast.error(err.response?.data?.message || 'Failed to update receptionist'),
+  });
+};
+
+export const useResetReceptionistPassword = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, newPassword }: { id: string; newPassword: string }) =>
+      receptionistApi.resetReceptionistPassword(id, newPassword),
+    onSuccess: () => {
+      toast.success('Password reset successfully');
+    },
+    onError: (err: any) => toast.error(err.response?.data?.message || 'Failed to reset password'),
+  });
+};
+
 export const useDeleteReceptionistByDoctor = () => {
   const qc = useQueryClient();
   return useMutation({

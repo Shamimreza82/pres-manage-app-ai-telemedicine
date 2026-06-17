@@ -175,5 +175,8 @@ export const findReceptionistsByDoctor = (doctorId: string, pagination: Paginati
   ] as const);
 };
 
+export const updateReceptionist = (id: string, data: { fullName?: string; phone?: string }) =>
+  db.receptionist.update({ where: { id }, data });
+
 export const deleteReceptionist = (id: string) =>
   db.receptionist.delete({ where: { id } });

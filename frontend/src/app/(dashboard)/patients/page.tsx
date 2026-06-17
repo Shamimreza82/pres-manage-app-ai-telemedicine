@@ -9,7 +9,8 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Pagination } from '@/components/ui/pagination';
-import { Plus, Search, Eye, Trash2, Users } from 'lucide-react';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { Plus, Search, MoreHorizontal, Eye, Trash2, Users } from 'lucide-react';
 
 const genderBadge = (g: string) => {
   const map: Record<string, string> = { MALE: 'badge-gradient-blue', FEMALE: 'badge-gradient-green', OTHER: 'badge-gradient-purple' };
@@ -20,14 +21,11 @@ const genderBadge = (g: string) => {
 export default function PatientsPage() {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
+  const [menuTarget, setMenuTarget] = useState<{ id: string; top: number; right: number } | null>(null);
   const params = { page: String(page), limit: '20', search };
   const { data, isLoading, isError } = usePatients(params);
   const deletePatient = useDeletePatient();
-
-  const handleDelete = (id: string, name: string) => {
-    if (!confirm(`Delete ${name}?`)) return;
-    deletePatient.mutate(id);
-  };
 
   if (isError) toast.error('Failed to load patients');
 
@@ -46,7 +44,18 @@ export default function PatientsPage() {
         </Link>
       </div>
 
-      <Card className="premium-card overflow-hidden">
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(v) => !v && setDeleteTarget(null)}
+        title="Delete Patient"
+        message={`Are you sure you want to delete "${deleteTarget?.name}"? All associated prescriptions and records will be removed.`}
+        confirmLabel="Delete"
+        variant="destructive"
+        loading={deletePatient.isPending}
+        onConfirm={() => deleteTarget && deletePatient.mutate(deleteTarget.id, { onSuccess: () => setDeleteTarget(null) })}
+      />
+
+      <Card className="premium-card">
         <div className="p-4 border-b border-gray-100 dark:border-gray-800/50">
           <div className="relative max-w-sm">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -106,16 +115,16 @@ export default function PatientsPage() {
                           <span className="badge-gradient-blue">{patient._count?.prescriptions || 0}</span>
                         </td>
                         <td className="text-right">
-                          <div className="flex justify-end gap-1">
-                            <Link href={`/patients/${patient.id}`}>
-                              <Button variant="ghost" size="icon" className="hover:bg-blue-50 dark:hover:bg-blue-950/30 rounded-lg">
-                                <Eye className="h-4 w-4 text-muted-foreground" />
-                              </Button>
-                            </Link>
-                            <Button variant="ghost" size="icon" onClick={() => handleDelete(patient.id, patient.fullName)} className="hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg">
-                              <Trash2 className="h-4 w-4 text-red-400" />
-                            </Button>
-                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => {
+                              const rect = (e.target as HTMLElement).closest('button')!.getBoundingClientRect();
+                              setMenuTarget(menuTarget?.id === patient.id ? null : { id: patient.id, top: rect.bottom + 4, right: window.innerWidth - rect.right });
+                            }}
+                          >
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
                         </td>
                       </tr>
                     ))}
@@ -135,6 +144,38 @@ export default function PatientsPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Actions Menu */}
+      {menuTarget && data?.data && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setMenuTarget(null)} />
+          <div
+            className="fixed z-50 w-48 rounded-xl bg-white dark:bg-gray-950 border border-gray-100 dark:border-gray-800 shadow-strong py-1.5 animate-scale-in"
+            style={{ top: menuTarget.top, right: menuTarget.right }}
+          >
+            {(() => {
+              const patient = data.data.find((p: any) => p.id === menuTarget.id);
+              if (!patient) return null;
+              return (
+                <>
+                  <Link href={`/patients/${patient.id}`} onClick={() => setMenuTarget(null)}>
+                    <button className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                      <Eye className="h-4 w-4 text-blue-500" /> View Details
+                    </button>
+                  </Link>
+                  <div className="border-t border-gray-100 dark:border-gray-800 my-1" />
+                  <button
+                    onClick={() => { setDeleteTarget({ id: patient.id, name: patient.fullName }); setMenuTarget(null); }}
+                    className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+                  >
+                    <Trash2 className="h-4 w-4" /> Delete Patient
+                  </button>
+                </>
+              );
+            })()}
+          </div>
+        </>
+      )}
     </div>
   );
 }

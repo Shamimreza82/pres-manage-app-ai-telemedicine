@@ -16,6 +16,9 @@ router.delete('/:id', authorize('SUPER_ADMIN'), receptionistController.remove);
 // DOCTOR endpoints (manage own receptionists)
 router.get('/my', authorize('DOCTOR'), receptionistController.getMyReceptionists);
 router.post('/my', authorize('DOCTOR'), validateBody(createReceptionistByDoctorSchema), receptionistController.createReceptionistByDoctor);
+router.put('/my/:id', authorize('DOCTOR'), receptionistController.updateMyReceptionist);
+router.patch('/my/:id/toggle-status', authorize('DOCTOR'), receptionistController.toggleMyReceptionistStatus);
+router.post('/my/:id/reset-password', authorize('DOCTOR'), receptionistController.resetReceptionistPassword);
 router.delete('/my/:id', authorize('DOCTOR'), receptionistController.deleteMyReceptionist);
 
 // RECEPTIONIST endpoints
