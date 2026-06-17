@@ -14,7 +14,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Plus, Trash2 } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, ShieldAlert, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { cn } from '@/lib/utils';
@@ -28,6 +28,14 @@ function NewPrescriptionForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const create = useCreatePrescription();
+  const [profileStatus, setProfileStatus] = useState<{ isProfileComplete: boolean; isVerified: boolean; loading: boolean }>({ isProfileComplete: true, isVerified: true, loading: true });
+
+  useEffect(() => {
+    api.get('/doctors/profile').then((r) => {
+      const p = r.data.data;
+      setProfileStatus({ isProfileComplete: p.isProfileComplete, isVerified: p.user?.isVerified, loading: false });
+    }).catch(() => setProfileStatus((s) => ({ ...s, loading: false })));
+  }, []);
 
   const {
     register,
@@ -81,6 +89,22 @@ function NewPrescriptionForm() {
         <Link href="/prescriptions"><Button variant="ghost" size="icon"><ArrowLeft className="h-5 w-5" /></Button></Link>
         <h1 className="text-2xl font-bold">New Prescription</h1>
       </div>
+
+      {!profileStatus.loading && (!profileStatus.isVerified || !profileStatus.isProfileComplete) && (
+        <div className="rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/30 p-4 flex items-start gap-3">
+          <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">
+              {!profileStatus.isVerified ? 'Account Pending Approval' : 'Profile Incomplete'}
+            </p>
+            <p className="text-sm text-amber-700 dark:text-amber-400 mt-0.5">
+              {!profileStatus.isVerified
+                ? 'Your account has not been verified by an admin yet. You cannot create prescriptions until your profile is approved.'
+                : 'Please complete your profile before creating prescriptions.'}
+            </p>
+          </div>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <Card>
@@ -191,7 +215,7 @@ function NewPrescriptionForm() {
         </Card>
 
         <div className="flex gap-4">
-          <Button type="submit" disabled={create.isPending} size="lg">
+          <Button type="submit" disabled={create.isPending || !profileStatus.isVerified || !profileStatus.isProfileComplete} size="lg">
             {create.isPending ? 'Creating...' : 'Create Prescription'}
           </Button>
           <Link href="/prescriptions"><Button type="button" variant="outline" size="lg">Cancel</Button></Link>

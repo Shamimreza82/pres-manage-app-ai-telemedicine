@@ -75,6 +75,20 @@ export const useAdminUser = (userId: string) =>
     enabled: !!userId,
   });
 
+export const useApproveDoctor = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: dashboardApi.approveDoctor,
+    onSuccess: (data) => {
+      toast.success(data.message || 'Doctor approved successfully');
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.adminDoctors });
+    },
+    onError: (err: any) => {
+      toast.error(err.response?.data?.message || 'Failed to approve doctor');
+    },
+  });
+};
+
 export const useClearDoctorMrAssignments = () => {
   const queryClient = useQueryClient();
   return useMutation({

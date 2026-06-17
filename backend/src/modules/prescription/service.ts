@@ -1,10 +1,20 @@
-import { badRequest, notFound } from '../../utils/errors';
+import { badRequest, notFound, forbidden } from '../../utils/errors';
 import { getPaginationParams } from '../../utils/pagination';
+import { db } from '../../config/database';
 import * as repo from './repository';
 import { CreatePrescriptionInput, UpdatePrescriptionInput } from './types';
 import { Request } from 'express';
 
 export const createPrescriptionForDoctor = async (doctorId: string, input: CreatePrescriptionInput) => {
+  const doctor = await db.doctor.findUnique({
+    where: { id: doctorId },
+    include: { user: { select: { isVerified: true } } },
+  });
+
+  if (!doctor) throw notFound('Doctor not found');
+  if (!doctor.isProfileComplete) throw forbidden('Complete your profile before creating prescriptions');
+  if (!doctor.user.isVerified) throw forbidden('Your account is pending admin approval. You cannot create prescriptions yet.');
+
   const subscription = await repo.getSubscriptionByDoctor(doctorId);
   if (!subscription) throw badRequest('No subscription found');
 

@@ -31,6 +31,9 @@ export const getAdminUser = (userId: string) =>
 export const toggleUserStatus = (userId: string) =>
   api.patch(`/admin/users/${userId}/status`).then((r) => r.data);
 
+export const approveDoctor = (userId: string) =>
+  api.patch(`/admin/doctors/${userId}/approve`).then((r) => r.data);
+
 export const clearDoctorMrAssignments = (doctorId: string) =>
   api.post(`/admin/doctors/${doctorId}/clear-mr`).then((r) => r.data);
 

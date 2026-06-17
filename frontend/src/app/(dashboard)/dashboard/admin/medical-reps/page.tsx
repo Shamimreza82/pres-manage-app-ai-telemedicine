@@ -1,7 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { useMrs, useCreateMr, useDeleteMr, useAssignDoctors, useAvailableDoctors } from '@/features/mr/hooks';
+import { useQueryClient } from '@tanstack/react-query';
+import { useMrs, useCreateMr, useDeleteMr, useAssignDoctors, useAvailableDoctors, mrKeys } from '@/features/mr/hooks';
+import { useToggleUserStatus } from '@/features/dashboard/hooks';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -11,7 +13,7 @@ import { SearchBar } from '@/components/admin/DataTable';
 import { Pagination } from '@/components/ui/pagination';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
-import { Plus, Trash2, UserRound, Mail, Phone, Stethoscope } from 'lucide-react';
+import { Plus, Trash2, UserRound, Mail, Phone, Stethoscope, MoreHorizontal, ToggleLeft, ToggleRight } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -38,7 +40,10 @@ export default function AdminMedicalRepsPage() {
   const createMr = useCreateMr();
   const deleteMr = useDeleteMr();
   const assignDoctors = useAssignDoctors();
+  const qc = useQueryClient();
+  const toggleStatus = useToggleUserStatus();
   const { data: availableDoctors } = useAvailableDoctors();
+  const [menuTarget, setMenuTarget] = useState<{ id: string; top: number; right: number } | null>(null);
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<CreateMrForm>({
     resolver: zodResolver(createMrSchema),
@@ -142,7 +147,7 @@ export default function AdminMedicalRepsPage() {
       {isLoading && !data ? (
         <div className="space-y-3">{[1, 2, 3].map(i => <div key={i} className="h-12 bg-gray-200 dark:bg-gray-800 rounded-lg animate-pulse" />)}</div>
       ) : (
-        <div className="premium-card-static overflow-hidden relative">
+        <div className="premium-card-static relative">
           {isFetching && (
             <div className="absolute inset-0 bg-white/50 dark:bg-gray-950/50 z-10 flex items-start justify-center pt-12">
               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-teal-500" />
@@ -181,15 +186,17 @@ export default function AdminMedicalRepsPage() {
                         {mr.user?.isActive ? 'Active' : 'Inactive'}
                       </Badge>
                     </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Button variant="outline" size="sm" onClick={() => openAssign(mr)}>
-                          <Stethoscope className="h-3.5 w-3.5 mr-1" /> Assign
-                        </Button>
-                        <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-600" onClick={() => setDeleteId(mr.id)}>
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      </div>
+                    <TableCell className="text-right">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          const rect = (e.target as HTMLElement).closest('button')!.getBoundingClientRect();
+                          setMenuTarget(menuTarget?.id === mr.id ? null : { id: mr.id, top: rect.bottom + 4, right: window.innerWidth - rect.right });
+                        }}
+                      >
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))
@@ -200,6 +207,54 @@ export default function AdminMedicalRepsPage() {
             <Pagination page={page} totalPages={data?.totalPages || 1} total={data?.total} onPageChange={setPage} />
           </div>
         </div>
+      )}
+
+      {/* Actions Menu */}
+      {menuTarget && data?.data && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setMenuTarget(null)} />
+          <div
+            className="fixed z-50 w-52 rounded-xl bg-white dark:bg-gray-950 border border-gray-100 dark:border-gray-800 shadow-strong py-1.5 animate-scale-in"
+            style={{ top: menuTarget.top, right: menuTarget.right }}
+          >
+            {(() => {
+              const mr = data.data.find((m: any) => m.id === menuTarget.id);
+              if (!mr) return null;
+              return (
+                <>
+                  <button
+                    onClick={() => { openAssign(mr); setMenuTarget(null); }}
+                    className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                  >
+                    <Stethoscope className="h-4 w-4 text-teal-500" /> Assign Doctors
+                  </button>
+                  {mr.user?.isActive ? (
+                    <button
+                      onClick={() => { toggleStatus.mutate(mr.user.id, { onSuccess: () => qc.invalidateQueries({ queryKey: mrKeys.mrs }) }); setMenuTarget(null); }}
+                      className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                    >
+                      <ToggleLeft className="h-4 w-4 text-amber-500" /> Deactivate
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => { toggleStatus.mutate(mr.user.id, { onSuccess: () => qc.invalidateQueries({ queryKey: mrKeys.mrs }) }); setMenuTarget(null); }}
+                      className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                    >
+                      <ToggleRight className="h-4 w-4 text-emerald-500" /> Activate
+                    </button>
+                  )}
+                  <div className="border-t border-gray-100 dark:border-gray-800 my-1" />
+                  <button
+                    onClick={() => { setDeleteId(mr.id); setMenuTarget(null); }}
+                    className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+                  >
+                    <Trash2 className="h-4 w-4" /> Delete MR
+                  </button>
+                </>
+              );
+            })()}
+          </div>
+        </>
       )}
 
       <Dialog open={!!assignMrId} onOpenChange={(open) => { if (!open) { setAssignMrId(null); setSelectedDoctors([]); } }}>

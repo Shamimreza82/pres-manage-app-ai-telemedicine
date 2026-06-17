@@ -25,7 +25,7 @@ const doctorMenu = [
       { href: '/dashboard/doctor/settings/change-password', label: 'Change Password', icon: Shield },
     ],
   },
-  { href: '/profile', label: 'Clinic & Chamber', icon: Building2, gradient: 'from-rose-500 to-rose-600' },
+  { href: '/dashboard/doctor/profile', label: 'My Profile', icon: Building2, gradient: 'from-rose-500 to-rose-600' },
 ];
 
 const adminMenu = [
