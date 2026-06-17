@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useState, useEffect } from 'react';
+import { Suspense, useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -9,7 +9,8 @@ import { useCreatePrescription } from '@/features/prescriptions/hooks';
 import { prescriptionSchema } from '@/features/prescriptions/schema';
 import { toast } from 'sonner';
 import { z } from 'zod';
-import { AlertTriangle, Plus, Trash2, Search, X, User } from 'lucide-react';
+import { AlertTriangle, Plus, Trash2, Search, X, User, Pill, FlaskConical } from 'lucide-react';
+import { useMedicineSearch, useLabTestSearch } from '@/features/medicine/hooks';
 
 type FormData = z.infer<typeof prescriptionSchema>;
 const emptyMedicine = { name: '', strength: '', dosage: '', frequency: '', duration: '', instructions: '' };
@@ -23,6 +24,27 @@ function NewPrescriptionForm() {
   const [selectedPatient, setSelectedPatient] = useState<any>(null);
   const [patientSearch, setPatientSearch] = useState('');
   const [showPatientResults, setShowPatientResults] = useState(false);
+
+  const [activeMedIndex, setActiveMedIndex] = useState<number | null>(null);
+  const [activeInvIndex, setActiveInvIndex] = useState<number | null>(null);
+  const [medQuery, setMedQuery] = useState('');
+  const [invQuery, setInvQuery] = useState('');
+  const [debouncedMedQuery, setDebouncedMedQuery] = useState('');
+  const [debouncedInvQuery, setDebouncedInvQuery] = useState('');
+  const [followUpPreset, setFollowUpPreset] = useState('');
+
+  const handleFollowUpPreset = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const val = e.target.value;
+    setFollowUpPreset(val);
+    if (val) {
+      const d = new Date();
+      d.setDate(d.getDate() + parseInt(val));
+      setValue('followUpDate', d.toISOString().split('T')[0], { shouldValidate: true });
+    }
+  };
+
+  const medSearch = useMedicineSearch(debouncedMedQuery);
+  const invSearch = useLabTestSearch(debouncedInvQuery);
 
   useEffect(() => {
     api.get('/patients?limit=100').then((r) => setPatients(r.data.data)).catch(() => {});
@@ -53,6 +75,55 @@ function NewPrescriptionForm() {
 
   const { fields: medFields, append: addMed, remove: removeMed } = useFieldArray({ control, name: 'medicines' });
   const { fields: invFields, append: addInv, remove: removeInv } = useFieldArray({ control, name: 'investigations' });
+
+  const medDebounce = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const invDebounce = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const medDropdownRef = useRef<HTMLDivElement>(null);
+  const invDropdownRef = useRef<HTMLDivElement>(null);
+
+  const handleMedInputChange = useCallback((i: number, value: string) => {
+    setActiveMedIndex(i);
+    setMedQuery(value);
+    setValue(`medicines.${i}.name`, value, { shouldValidate: true });
+    if (medDebounce.current) clearTimeout(medDebounce.current);
+    medDebounce.current = setTimeout(() => setDebouncedMedQuery(value), 300);
+  }, [setValue]);
+
+  const handleInvInputChange = useCallback((i: number, value: string) => {
+    setActiveInvIndex(i);
+    setInvQuery(value);
+    setValue(`investigations.${i}.name`, value, { shouldValidate: true });
+    if (invDebounce.current) clearTimeout(invDebounce.current);
+    invDebounce.current = setTimeout(() => setDebouncedInvQuery(value), 300);
+  }, [setValue]);
+
+  const selectMedicine = useCallback((i: number, name: string, strength?: string) => {
+    setValue(`medicines.${i}.name`, name, { shouldValidate: true });
+    if (strength) setValue(`medicines.${i}.strength`, strength, { shouldValidate: true });
+    setActiveMedIndex(null);
+    setMedQuery('');
+    setDebouncedMedQuery('');
+  }, [setValue]);
+
+  const selectLabTest = useCallback((i: number, name: string) => {
+    setValue(`investigations.${i}.name`, name, { shouldValidate: true });
+    setActiveInvIndex(null);
+    setInvQuery('');
+    setDebouncedInvQuery('');
+  }, [setValue]);
+
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (medDropdownRef.current && !medDropdownRef.current.contains(e.target as Node)) {
+        setActiveMedIndex(null);
+      }
+      if (invDropdownRef.current && !invDropdownRef.current.contains(e.target as Node)) {
+        setActiveInvIndex(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
 
   const watchPatientId = watch('patientId');
   useEffect(() => {
@@ -114,8 +185,9 @@ function NewPrescriptionForm() {
           {/* A. Patient Selection */}
           <section className="bg-white dark:bg-gray-900 rounded-xl p-6 shadow-sm border border-transparent">
             <label className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-3 block">Patient <span className="text-red-500">*</span></label>
+            {errors.patientId && <p className="text-xs text-red-500 mb-2">{errors.patientId.message as string}</p>}
             {watchPatientId && selectedPatient ? (
-              <div className="flex items-center gap-5">
+              <div className={cn("flex items-center gap-5", errors.patientId ? "p-3 rounded-xl ring-2 ring-red-500" : "")}>
                 <div className="w-16 h-16 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-500 dark:text-gray-400 font-bold text-2xl shrink-0">
                   {selectedPatient.fullName?.charAt(0) || '?'}
                 </div>
@@ -138,7 +210,7 @@ function NewPrescriptionForm() {
                 </button>
               </div>
             ) : (
-              <div className="relative">
+              <div className={cn("relative rounded-xl", errors.patientId ? "ring-2 ring-red-500" : "")}>
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <input
                   placeholder="Search Patient (Name, ID or Mobile)..."
@@ -261,7 +333,7 @@ function NewPrescriptionForm() {
           </div>
 
           {/* D. Medicine Entry */}
-          <section className="bg-white dark:bg-gray-900 rounded-2xl p-8 border border-teal-500/10 shadow-lg relative overflow-hidden">
+          <section className="bg-white dark:bg-gray-900 rounded-2xl p-8 border border-teal-500/10 shadow-lg relative">
             <div className="absolute top-0 right-0 p-4">
               <div className="flex items-center gap-1.5 text-xs font-bold text-gray-400 bg-gray-50 dark:bg-gray-800 px-2 py-1 rounded-lg">
                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" /></svg>
@@ -282,14 +354,60 @@ function NewPrescriptionForm() {
             <div className="space-y-4">
               {medFields.map((field, i) => (
                 <div key={field.id} className="grid grid-cols-12 gap-4 items-start">
-                  <div className="col-span-12 md:col-span-4 space-y-1.5">
-                    <label className="text-[11px] font-bold text-gray-500 uppercase ml-1">Medicine <span className="text-red-500">*</span></label>
-                    <div className="relative">
-                      <input {...register(`medicines.${i}.name`)} placeholder="Type Brand or Generic name..." className={cn("w-full bg-gray-50 dark:bg-gray-800/50 border border-gray-200/60 dark:border-gray-700/60 rounded-xl p-3.5 text-sm focus:ring-2 focus:ring-teal-500/30 focus:outline-none", errors.medicines?.[i]?.name && 'border-red-500')} />
-                      <svg className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                    <div className="col-span-12 md:col-span-4 space-y-1.5">
+                      <label className="text-[11px] font-bold text-gray-500 uppercase ml-1">Medicine <span className="text-red-500">*</span></label>
+                      <div className="relative" ref={activeMedIndex === i ? medDropdownRef : undefined}>
+                        <input
+                          value={activeMedIndex === i ? medQuery : watch(`medicines.${i}.name`)}
+                          onChange={(e) => handleMedInputChange(i, e.target.value)}
+                          onFocus={() => { setActiveMedIndex(i); setMedQuery(watch(`medicines.${i}.name`)); }}
+                          placeholder="Type Brand or Generic name..."
+                          className={cn("w-full bg-gray-50 dark:bg-gray-800/50 border border-gray-200/60 dark:border-gray-700/60 rounded-xl p-3.5 text-sm focus:ring-2 focus:ring-teal-500/30 focus:outline-none", errors.medicines?.[i]?.name && 'border-red-500')}
+                        />
+                        <svg className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                        {activeMedIndex === i && medQuery.length >= 2 && (
+                          <div className="absolute top-full mt-1 left-0 right-0 z-30 max-h-60 overflow-y-auto rounded-xl bg-white dark:bg-gray-950 border border-gray-100 dark:border-gray-800 shadow-xl">
+                            {medSearch.isLoading ? (
+                              <p className="text-sm text-gray-400 text-center py-4">Searching...</p>
+                            ) : medSearch.data?.brands.length === 0 && medSearch.data?.generics.length === 0 ? (
+                              <p className="text-sm text-gray-400 text-center py-4">No results found</p>
+                            ) : (
+                              <>
+                                {medSearch.data?.brands.slice(0, 5).map((b) => (
+                                  <button
+                                    key={`brand-${b.id}`}
+                                    type="button"
+                                    onClick={() => selectMedicine(i, b.name, b.strength)}
+                                    className="w-full flex items-start gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors text-left border-b border-gray-50 dark:border-gray-800/50 last:border-0"
+                                  >
+                                    <Pill className="h-4 w-4 text-teal-500 shrink-0 mt-0.5" />
+                                    <div className="min-w-0 flex-1">
+                                      <p className="text-sm font-medium text-gray-900 dark:text-white">{b.name} <span className="text-xs font-normal text-gray-500">{b.strength}</span></p>
+                                      <p className="text-xs text-gray-400 truncate">{b.company?.name} · {b.form}</p>
+                                    </div>
+                                  </button>
+                                ))}
+                                {medSearch.data?.generics.slice(0, 5).map((g) => (
+                                  <button
+                                    key={`generic-${g.id}`}
+                                    type="button"
+                                    onClick={() => selectMedicine(i, g.name)}
+                                    className="w-full flex items-start gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors text-left"
+                                  >
+                                    <FlaskConical className="h-4 w-4 text-purple-500 shrink-0 mt-0.5" />
+                                    <div className="min-w-0 flex-1">
+                                      <p className="text-sm font-medium text-gray-900 dark:text-white">{g.name}</p>
+                                      <p className="text-xs text-gray-400 truncate">Generic</p>
+                                    </div>
+                                  </button>
+                                ))}
+                              </>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      {errors.medicines?.[i]?.name && <p className="text-xs text-red-500">{errors.medicines[i]?.name?.message}</p>}
                     </div>
-                    {errors.medicines?.[i]?.name && <p className="text-xs text-red-500">{errors.medicines[i]?.name?.message}</p>}
-                  </div>
                   <div className="col-span-6 md:col-span-2 space-y-1.5">
                     <label className="text-[11px] font-bold text-gray-500 uppercase ml-1">Strength</label>
                     <input {...register(`medicines.${i}.strength`)} placeholder="665mg" className="w-full bg-gray-50 dark:bg-gray-800/50 border border-gray-200/60 dark:border-gray-700/60 rounded-xl p-3.5 text-sm focus:ring-2 focus:ring-teal-500/30 focus:outline-none text-center font-semibold" />
@@ -325,6 +443,81 @@ function NewPrescriptionForm() {
               <button type="button" onClick={() => addMed(emptyMedicine)} className="flex-1 bg-teal-600 text-white font-bold h-[54px] rounded-xl shadow-md shadow-teal-600/20 hover:scale-[1.01] transition-transform active:scale-95 flex items-center justify-center gap-2 text-sm">
                 <Plus className="w-5 h-5" /> Add to Prescription
               </button>
+            </div>
+          </section>
+
+          {/* Investigations */}
+          <section className="mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <label className="text-sm font-bold text-gray-800 dark:text-gray-200">Investigations / ল্যাব টেস্ট</label>
+              <button type="button" onClick={() => addInv({ name: '', notes: '' })} className="text-xs font-bold text-teal-600 hover:text-teal-700 flex items-center gap-1">
+                <Plus className="w-3.5 h-3.5" /> Add Test
+              </button>
+            </div>
+            <div className="bg-white dark:bg-gray-900 border border-gray-200/60 dark:border-gray-700/60 rounded-xl p-4 shadow-sm">
+              {invFields.length > 0 && (
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {invFields.map((field, i) => {
+                    const inv = watch(`investigations.${i}`);
+                    if (!inv?.name) return null;
+                    return (
+                      <span key={field.id} className="bg-teal-50 dark:bg-teal-950/30 text-teal-700 dark:text-teal-300 px-3 py-1 rounded-lg text-xs font-bold border border-teal-100 dark:border-teal-800 flex items-center gap-1">
+                        {inv.name}
+                        <button type="button" onClick={() => removeInv(i)} className="hover:text-red-500">
+                          <X className="w-3 h-3" />
+                        </button>
+                      </span>
+                    );
+                  })}
+                </div>
+              )}
+              <div className="flex items-center gap-2">
+                {invFields.map((field, i) => (
+                  <div key={field.id} className="flex items-center gap-2 flex-1 relative" ref={activeInvIndex === i ? invDropdownRef : undefined}>
+                    <input
+                      value={activeInvIndex === i ? invQuery : watch(`investigations.${i}.name`)}
+                      onChange={(e) => handleInvInputChange(i, e.target.value)}
+                      onFocus={() => { setActiveInvIndex(i); setInvQuery(watch(`investigations.${i}.name`) || ''); }}
+                      placeholder="Search test..."
+                      className="w-full bg-transparent border border-gray-200/60 dark:border-gray-700/60 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500/30 focus:outline-none"
+                    />
+                    {activeInvIndex === i && invQuery.length >= 2 && (
+                      <div className="absolute top-full mt-1 left-0 right-0 z-30 max-h-48 overflow-y-auto rounded-xl bg-white dark:bg-gray-950 border border-gray-100 dark:border-gray-800 shadow-xl">
+                        {invSearch.isLoading ? (
+                          <p className="text-sm text-gray-400 text-center py-4">Searching...</p>
+                        ) : invSearch.data?.length === 0 ? (
+                          <p className="text-sm text-gray-400 text-center py-4">No tests found</p>
+                        ) : (
+                          invSearch.data?.map((t) => (
+                            <button
+                              key={t.id}
+                              type="button"
+                              onClick={() => selectLabTest(i, t.name)}
+                              className="w-full flex items-start gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors text-left"
+                            >
+                              <FlaskConical className="h-4 w-4 text-teal-500 shrink-0 mt-0.5" />
+                              <div className="min-w-0 flex-1">
+                                <p className="text-sm font-medium text-gray-900 dark:text-white">{t.name}</p>
+                                <p className="text-xs text-gray-400 truncate">{t.shortName && `${t.shortName} · `}{t.category}</p>
+                              </div>
+                            </button>
+                          ))
+                        )}
+                      </div>
+                    )}
+                    {invFields.length > 1 && (
+                      <button type="button" onClick={() => removeInv(i)} className="p-2 text-gray-400 hover:text-red-500">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+                {invFields.length === 0 && (
+                  <div className="flex-1">
+                    <input placeholder="Search tests..." className="w-full bg-transparent border-none p-0 text-sm focus:ring-0 placeholder:text-gray-300" />
+                  </div>
+                )}
+              </div>
             </div>
           </section>
 
@@ -389,54 +582,33 @@ function NewPrescriptionForm() {
               <label className="text-sm font-bold text-gray-800 dark:text-gray-200">Food Advice / খাদ্য</label>
               <textarea {...register('foodAdvice')} className="w-full bg-white dark:bg-gray-900 border border-gray-200/60 dark:border-gray-700/60 rounded-xl p-4 text-sm focus:ring-2 focus:ring-teal-500/30 focus:outline-none min-h-[80px] shadow-sm resize-none" placeholder="Dietary recommendations..." />
               <label className="text-sm font-bold text-gray-800 dark:text-gray-200">Follow-up / পুনরায়</label>
-              <input type="date" {...register('followUpDate')} className="w-full bg-white dark:bg-gray-900 border border-gray-200/60 dark:border-gray-700/60 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-teal-500/30 focus:outline-none" />
-            </div>
-          </section>
-
-          {/* Investigations */}
-          <section className="mb-20 -mt-12">
-            <div className="flex items-center justify-between mb-4">
-              <label className="text-sm font-bold text-gray-800 dark:text-gray-200">Investigations / ল্যাব টেস্ট</label>
-              <button type="button" onClick={() => addInv({ name: '', notes: '' })} className="text-xs font-bold text-teal-600 hover:text-teal-700 flex items-center gap-1">
-                <Plus className="w-3.5 h-3.5" /> Add Test
-              </button>
-            </div>
-            <div className="bg-white dark:bg-gray-900 border border-gray-200/60 dark:border-gray-700/60 rounded-xl p-4 shadow-sm">
-              {invFields.length > 0 && (
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {invFields.map((field, i) => {
-                    const inv = watch(`investigations.${i}`);
-                    if (!inv?.name) return null;
-                    return (
-                      <span key={field.id} className="bg-teal-50 dark:bg-teal-950/30 text-teal-700 dark:text-teal-300 px-3 py-1 rounded-lg text-xs font-bold border border-teal-100 dark:border-teal-800 flex items-center gap-1">
-                        {inv.name}
-                        <button type="button" onClick={() => removeInv(i)} className="hover:text-red-500">
-                          <X className="w-3 h-3" />
-                        </button>
-                      </span>
-                    );
-                  })}
-                </div>
-              )}
-              <div className="flex items-center gap-2">
-                {invFields.map((field, i) => (
-                  <div key={field.id} className="flex items-center gap-2 flex-1">
-                    <input {...register(`investigations.${i}.name`)} placeholder="Search test..." className="w-full bg-transparent border border-gray-200/60 dark:border-gray-700/60 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-teal-500/30 focus:outline-none" />
-                    {invFields.length > 1 && (
-                      <button type="button" onClick={() => removeInv(i)} className="p-2 text-gray-400 hover:text-red-500">
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    )}
-                  </div>
-                ))}
-                {invFields.length === 0 && (
-                  <div className="flex-1">
-                    <input placeholder="Search tests..." className="w-full bg-transparent border-none p-0 text-sm focus:ring-0 placeholder:text-gray-300" />
-                  </div>
-                )}
+              <div className="flex gap-2">
+                <select
+                  value={followUpPreset}
+                  onChange={handleFollowUpPreset}
+                  className="w-1/2 bg-white dark:bg-gray-900 border border-gray-200/60 dark:border-gray-700/60 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-teal-500/30 focus:outline-none appearance-none"
+                >
+                  <option value="">Quick select</option>
+                  <option value="1">1 Day</option>
+                  <option value="2">2 Days</option>
+                  <option value="3">3 Days</option>
+                  <option value="7">7 Days</option>
+                  <option value="14">14 Days</option>
+                  <option value="30">1 Month</option>
+                </select>
+                <input
+                  type="date"
+                  {...register('followUpDate')}
+                  onChange={(e) => {
+                    setFollowUpPreset('');
+                    register('followUpDate').onChange(e);
+                  }}
+                  className="w-1/2 bg-white dark:bg-gray-900 border border-gray-200/60 dark:border-gray-700/60 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-teal-500/30 focus:outline-none"
+                />
               </div>
             </div>
           </section>
+
         </div>
 
         {/* ===== RIGHT SIDE: Live Preview Panel ===== */}
