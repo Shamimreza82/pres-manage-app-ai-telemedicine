@@ -394,9 +394,7 @@ export default function RecAppointmentsPage() {
               {hasFilters ? (
                 <Button variant="outline" onClick={clearFilters}>Clear Filters</Button>
               ) : (
-                <DialogTrigger asChild>
-                  <Button variant="outline">Schedule Appointment</Button>
-                </DialogTrigger>
+                <Button variant="outline" onClick={() => setOpen(true)}>Schedule Appointment</Button>
               )}
             </div>
           ) : (

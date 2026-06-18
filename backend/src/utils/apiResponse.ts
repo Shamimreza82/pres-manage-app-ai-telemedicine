@@ -18,5 +18,3 @@ export const sendPaginated = (
     totalPages: Math.ceil(total / limit),
   });
 
-export const sendError = (res: Response, message: string, status = 400) =>
-  res.status(status).json({ success: false, message });

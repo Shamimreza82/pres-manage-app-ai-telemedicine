@@ -26,12 +26,4 @@ export interface AuthResponse {
   };
 }
 
-export interface User {
-  id: string;
-  email: string;
-  role: string;
-  isActive: boolean;
-  doctor?: any;
-  mr?: any;
-  createdAt: string;
-}
+

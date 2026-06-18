@@ -82,28 +82,4 @@ export interface Prescription {
   doctor?: Doctor;
 }
 
-export interface Appointment {
-  id: string;
-  doctorId: string;
-  patientId: string;
-  date: string;
-  time: string;
-  status: "SCHEDULED" | "COMPLETED" | "CANCELLED" | "NO_SHOW";
-  notes?: string;
-  patient?: { id: string; fullName: string; patientId: string; phone?: string };
-}
 
-export interface PaginatedResponse<T> {
-  items: T[];
-  total: number;
-  page: number;
-  totalPages: number;
-}
-
-export interface DashboardStats {
-  totalPatients: number;
-  totalPrescriptions: number;
-  todayAppointments: number;
-  monthlyPrescriptions: number;
-  monthlyData: number[];
-}

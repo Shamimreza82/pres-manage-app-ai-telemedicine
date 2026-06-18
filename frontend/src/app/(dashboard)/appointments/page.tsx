@@ -76,7 +76,7 @@ export default function AppointmentsPage() {
     try {
       const { data } = await api.get('/patients', { params: { limit: 100 } });
       setPatients(data.data);
-    } catch {}
+    } catch (e) { console.error(e); }
   };
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -97,7 +97,7 @@ export default function AppointmentsPage() {
       await api.patch(`/appointments/${id}`, { status });
       load(page);
       toast.success(`Appointment ${status.toLowerCase()}`);
-    } catch {}
+    } catch (e) { console.error(e); }
   };
 
   return (

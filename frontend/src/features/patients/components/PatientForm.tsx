@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -10,7 +11,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { patientSchema } from '../schema';
-import { useCreatePatient } from '../hooks';
+import { useCreatePatient, useUpdatePatient } from '../hooks';
+import { useAdminDoctors } from '@/features/dashboard/hooks';
 import { toast } from 'sonner';
 
 const BLOOD_GROUPS = [
@@ -24,26 +26,49 @@ const BLOOD_GROUPS = [
   { value: 'O_NEGATIVE', label: 'O-' },
 ];
 
-type FormData = z.infer<typeof patientSchema>;
+type FormData = z.infer<typeof patientSchema> & { doctorId?: string };
 
-export const PatientForm = ({ onSuccess }: { onSuccess?: () => void }) => {
+interface PatientFormProps {
+  onSuccess?: () => void;
+  initialData?: FormData & { doctorId?: string; id?: string };
+}
+
+export const PatientForm = ({ onSuccess, initialData }: PatientFormProps) => {
   const create = useCreatePatient();
+  const update = useUpdatePatient();
+  const { data: doctors } = useAdminDoctors({ limit: 200 });
+  const isEdit = !!initialData;
+
   const {
     register,
     handleSubmit,
     setValue,
+    reset,
     formState: { errors },
   } = useForm<FormData>({ resolver: zodResolver(patientSchema) });
 
+  useEffect(() => {
+    if (initialData) {
+      reset(initialData);
+    }
+  }, [initialData, reset]);
+
   const onSubmit = async (data: FormData) => {
     try {
-      await create.mutateAsync(data);
-      toast.success('Patient added successfully');
+      if (isEdit && initialData?.id) {
+        await update.mutateAsync({ id: initialData.id, data });
+        toast.success('Patient updated successfully');
+      } else {
+        await create.mutateAsync(data);
+        toast.success('Patient added successfully');
+      }
       onSuccess?.();
-    } catch {
-      // error handled by hook
+    } catch (e) {
+      console.error(e);
     }
   };
+
+  const isPending = create.isPending || update.isPending;
 
   return (
     <div className="animate-fade-in">
@@ -101,6 +126,20 @@ export const PatientForm = ({ onSuccess }: { onSuccess?: () => void }) => {
               </div>
             </div>
 
+            {isEdit && doctors?.data && (
+              <div className="space-y-2">
+                <Label>Assigned Doctor</Label>
+                <Select onValueChange={(v) => setValue('doctorId', v)} defaultValue={initialData?.doctorId}>
+                  <SelectTrigger><SelectValue placeholder="Select doctor" /></SelectTrigger>
+                  <SelectContent>
+                    {doctors.data.map((d: any) => (
+                      <SelectItem key={d.id} value={d.id}>{d.fullName} — {d.clinicName}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
             <div className="space-y-2">
               <Label>Address</Label>
               <Textarea {...register('address')} />
@@ -114,8 +153,8 @@ export const PatientForm = ({ onSuccess }: { onSuccess?: () => void }) => {
               <Textarea {...register('allergies')} />
             </div>
 
-            <Button type="submit" disabled={create.isPending} className="w-full">
-              {create.isPending ? 'Saving...' : 'Save Patient'}
+            <Button type="submit" disabled={isPending} className="w-full">
+              {isPending ? 'Saving...' : isEdit ? 'Update Patient' : 'Save Patient'}
             </Button>
           </form>
         </CardContent>

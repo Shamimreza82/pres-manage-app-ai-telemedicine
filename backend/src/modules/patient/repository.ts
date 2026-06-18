@@ -51,7 +51,7 @@ export const createPatient = (data: CreatePatientInput & { doctorId: string }) =
     } as any,
   });
 
-export const updatePatient = (id: string, doctorId: string, data: UpdatePatientInput) =>
+export const updatePatient = (id: string, data: UpdatePatientInput & { doctorId?: string }) =>
   db.patient.update({ where: { id }, data: data as any });
 
 export const deletePatient = (id: string) =>

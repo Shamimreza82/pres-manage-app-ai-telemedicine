@@ -3,7 +3,6 @@ import { authenticate, authorize } from '../../middlewares/auth';
 import { upload } from '../../middlewares/upload';
 import { validateBody } from '../../middlewares/validate';
 import { z } from 'zod';
-import { updateDoctorSchema } from './validation';
 import * as doctorController from './controller';
 
 const router = Router();

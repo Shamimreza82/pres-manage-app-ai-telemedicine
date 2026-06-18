@@ -4,9 +4,6 @@ import type { Plan, CreatePlanInput, UpdatePlanInput } from './types';
 export const getPlans = () =>
   api.get<{ success: boolean; data: Plan[] }>('/plans').then((r) => r.data.data);
 
-export const getPlan = (id: string) =>
-  api.get<{ success: boolean; data: Plan }>(`/plans/${id}`).then((r) => r.data.data);
-
 export const createPlan = (data: CreatePlanInput) =>
   api.post<{ success: boolean; data: Plan }>('/plans', data).then((r) => r.data.data);
 

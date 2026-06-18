@@ -1,6 +1,7 @@
 export interface Patient {
   id: string;
   patientId: string;
+  doctorId?: string;
   fullName: string;
   age: number;
   gender: string;

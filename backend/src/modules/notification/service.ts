@@ -1,9 +1,6 @@
 import * as repo from './repository';
 import { CreateNotificationInput } from './types';
 
-export const sendNotification = (input: CreateNotificationInput) =>
-  repo.createNotification(input);
-
 export const getUserNotifications = (userId: string) =>
   repo.findNotificationsByUser(userId);
 

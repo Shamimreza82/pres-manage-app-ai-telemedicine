@@ -21,6 +21,12 @@ export const approveDoctor = async (userId: string) => {
   return repo.verifyUser(userId);
 };
 
+export const toggleDoctorVerification = async (userId: string) => {
+  const user = await repo.findUserById(userId);
+  if (!user || user.role !== 'DOCTOR') throw notFound('Doctor not found');
+  return repo.updateUserVerification(userId, !user.isVerified);
+};
+
 export const toggleDoctorStatus = async (userId: string) => {
   const user = await repo.findUserById(userId);
   if (!user || user.role !== 'DOCTOR') throw notFound('Doctor not found');

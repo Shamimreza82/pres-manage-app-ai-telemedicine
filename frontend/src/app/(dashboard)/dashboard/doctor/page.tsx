@@ -3,7 +3,7 @@
 import { useDoctorDashboard } from '@/features/dashboard/hooks';
 import { StatsCard } from '@/features/dashboard/components/StatsCard';
 import { MonthlyChart } from '@/features/dashboard/components/MonthlyChart';
-import { Users, FileText, Calendar, Activity } from 'lucide-react';
+import { Users, FileText, Calendar, Activity, Clock } from 'lucide-react';
 
 export default function DoctorDashboardPage() {
   const { data: stats, isLoading } = useDoctorDashboard();
@@ -27,6 +27,7 @@ export default function DoctorDashboardPage() {
     { title: 'Total Prescriptions', value: stats?.totalPrescriptions || 0, icon: FileText, gradient: 'gradient-success', delay: 0.1 },
     { title: 'Monthly Appointments', value: stats?.monthlyAppointments || 0, icon: Calendar, gradient: 'gradient-warning', delay: 0.2 },
     { title: 'This Month Rx', value: stats?.monthlyPrescriptions || 0, icon: Activity, gradient: 'gradient-info', delay: 0.3 },
+    { title: 'Today Rx', value: stats?.todaysPrescriptions || 0, icon: Clock, gradient: 'gradient-primary', delay: 0.4 },
   ];
 
   return (

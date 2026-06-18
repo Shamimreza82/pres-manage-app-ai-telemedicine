@@ -10,6 +10,7 @@ router.use(authorize('SUPER_ADMIN'));
 router.get('/dashboard', adminController.getDashboardStats);
 router.get('/doctors', adminController.listDoctors);
 router.patch('/doctors/:userId/approve', adminController.approveDoctor);
+router.patch('/doctors/:userId/verify', adminController.toggleDoctorVerification);
 router.patch('/doctors/:userId/status', adminController.toggleDoctorStatus);
 router.get('/users/:userId', adminController.getUser);
 router.patch('/users/:userId/status', adminController.toggleUserStatus);

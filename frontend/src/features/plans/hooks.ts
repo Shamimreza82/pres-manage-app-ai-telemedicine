@@ -13,13 +13,6 @@ export const usePlans = () =>
     queryFn: plansApi.getPlans,
   });
 
-export const usePlan = (id: string) =>
-  useQuery({
-    queryKey: planKeys.detail(id),
-    queryFn: () => plansApi.getPlan(id),
-    enabled: !!id,
-  });
-
 export const useCreatePlan = () => {
   const qc = useQueryClient();
   return useMutation({

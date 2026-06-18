@@ -61,15 +61,15 @@ function NewPrescriptionForm() {
   const invSearch = useLabTestSearch(debouncedInvQuery);
 
   useEffect(() => {
-    api.get('/patients?limit=100').then((r) => setPatients(r.data.data)).catch(() => {});
+    api.get('/patients?limit=100').then((r) => setPatients(r.data.data)).catch((e) => console.error(e));
     api.get('/doctors/profile').then((r) => {
       const p = r.data.data;
       setDoctorProfile(p);
       setProfileStatus({ isProfileComplete: p.isProfileComplete, isVerified: p.user?.isVerified, loading: false });
-    }).catch(() => setProfileStatus((s) => ({ ...s, loading: false })));
+    }).catch((e) => { console.error(e); setProfileStatus((s) => ({ ...s, loading: false })); });
     const apiBase = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5000';
     QRCodeLib.toDataURL(`${apiBase}/verify`, { width: 120, margin: 1, color: { dark: '#111827', light: '#ffffff' } })
-      .then(setQrDataUrl).catch(() => {});
+      .then(setQrDataUrl).catch((e) => console.error(e));
   }, []);
 
   const {
@@ -238,20 +238,20 @@ function NewPrescriptionForm() {
     .letterhead { padding: 14px 24px; border-bottom: 3px solid #000; display: flex; justify-content: space-between; align-items: flex-start; }
     .lh-right { text-align: right; }
     .doc-name { font-size: 18px; font-weight: 800; color: #000; margin: 0 0 1px; }
-    .doc-deg { font-size: 10px; font-weight: 700; color: #000; margin: 0; }
-    .doc-spec { font-size: 9px; font-weight: 600; color: #000; text-transform: uppercase; letter-spacing: 0.05em; margin: 0; }
-    .doc-detail { font-size: 9px; font-weight: 600; color: #000; margin: 0; }
+    .doc-deg { font-size: 11px; font-weight: 700; color: #000; margin: 0; }
+    .doc-spec { font-size: 10px; font-weight: 600; color: #000; text-transform: uppercase; letter-spacing: 0.05em; margin: 0; }
+    .doc-detail { font-size: 10px; font-weight: 600; color: #000; margin: 0; }
     .logo-img { width: 48px; height: 48px; object-fit: contain; display: block; margin: 0 0 4px auto; }
     .logo-placeholder { width: 40px; height: 40px; background: #000; border-radius: 6px; display: flex; align-items: center; justify-content: center; margin: 0 0 4px auto; }
-    .brand { font-size: 7px; font-weight: 800; color: #000; margin: 0; }
+    .brand { font-size: 8px; font-weight: 800; color: #000; margin: 0; }
 
-    .body-area { padding: 24px 24px 20px; display: grid; grid-template-columns: 4fr 8fr; gap: 24px; font-size: 11px; }
+    .body-area { padding: 24px 24px 20px; display: grid; grid-template-columns: 4fr 8fr; gap: 24px; font-size: 12px; }
     .left-col { border-right: 1px solid #000; padding-right: 20px; }
     .right-col { }
 
-    .section-title { font-size: 9px; font-weight: 800; color: #000; text-transform: uppercase; letter-spacing: 0.1em; margin: 0 0 6px; }
-    .value-text { font-size: 11px; font-weight: 600; color: #000; margin: 0 0 4px; }
-    .value-bold { font-size: 11px; font-weight: 800; color: #000; margin: 0 0 2px; }
+    .section-title { font-size: 10px; font-weight: 800; color: #000; text-transform: uppercase; letter-spacing: 0.1em; margin: 0 0 6px; }
+    .value-text { font-size: 12px; font-weight: 600; color: #000; margin: 0 0 4px; }
+    .value-bold { font-size: 12px; font-weight: 800; color: #000; margin: 0 0 2px; }
     .section-gap { margin-bottom: 20px; }
 
     .rx-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
@@ -260,25 +260,25 @@ function NewPrescriptionForm() {
 
     .med-block { margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px dashed #999; }
     .med-block:last-child { border-bottom: none; }
-    .med-name { font-size: 13px; font-weight: 800; color: #000; margin: 0 0 2px; }
-    .med-line { font-size: 12px; font-weight: 600; color: #000; margin: 0 0 1px; padding-left: 32px; }
-    .med-inst { font-size: 10px; font-weight: 600; color: #000; margin: 2px 0 0; }
+    .med-name { font-size: 14px; font-weight: 800; color: #000; margin: 0 0 2px; }
+    .med-line { font-size: 13px; font-weight: 600; color: #000; margin: 0 0 1px; padding-left: 32px; }
+    .med-inst { font-size: 11px; font-weight: 600; color: #000; margin: 2px 0 0; }
 
     .inv-section { margin-top: 24px; }
-    .inv-label { font-size: 11px; font-weight: 800; color: #000; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 2px solid #000; padding-bottom: 4px; margin-bottom: 6px; }
-    .inv-value { font-size: 11px; font-weight: 600; color: #000; }
+    .inv-label { font-size: 12px; font-weight: 800; color: #000; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 2px solid #000; padding-bottom: 4px; margin-bottom: 6px; }
+    .inv-value { font-size: 12px; font-weight: 600; color: #000; }
 
     .sig-area { text-align: right; padding-top: 20px; }
     .sig-img { height: 40px; margin: 0 0 4px auto; object-fit: contain; display: block; }
     .sig-line { width: 160px; height: 1px; background: #000; margin: 0 0 6px auto; }
-    .sig-name { font-size: 11px; font-weight: 800; color: #000; text-transform: uppercase; margin: 0; }
-    .sig-reg { font-size: 9px; font-weight: 600; color: #000; margin: 0; }
+    .sig-name { font-size: 12px; font-weight: 800; color: #000; text-transform: uppercase; margin: 0; }
+    .sig-reg { font-size: 10px; font-weight: 600; color: #000; margin: 0; }
 
     .watermark { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-45deg); pointer-events: none; opacity: 0.03; user-select: none; font-size: 96px; font-weight: 900; color: #000; z-index: 0; }
 
     .qr-area { margin-top: 36px; }
     .qr-img { width: 72px; height: 72px; display: block; margin-bottom: 4px; }
-    .qr-label { font-size: 9px; font-weight: 700; color: #000; margin: 0; }
+    .qr-label { font-size: 10px; font-weight: 700; color: #000; margin: 0; }
   </style>
 </head>
   <body>
@@ -323,7 +323,7 @@ function NewPrescriptionForm() {
         ${medBlocks ? `
         <div class="med-list">
           ${medBlocks}
-        </div>` : '<p style="font-weight: 600; font-size: 11px; color: #000;">No medicines prescribed</p>'}
+        </div>` : '<p style="font-weight: 600; font-size: 12px; color: #000;">No medicines prescribed</p>'}
 
         ${invList ? `
         <div class="inv-section">
@@ -386,7 +386,7 @@ function NewPrescriptionForm() {
       try {
         const data = JSON.parse(saved);
         reset(data);
-      } catch {}
+      } catch (e) { console.error(e); }
     }
   }, [reset]);
 
@@ -402,9 +402,15 @@ function NewPrescriptionForm() {
             <p className="text-sm text-gray-400">Create a new prescription for your patient</p>
           </div>
         </div>
+        <div className="flex items-center justify-end mb-4">
+          <button type="button" onClick={() => setShowPreview(!showPreview)} className="text-xs font-bold text-teal-600 flex items-center gap-1 px-3 py-1.5 rounded-lg bg-teal-50 dark:bg-teal-950/30 border border-teal-200 dark:border-teal-800">
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+            {showPreview ? 'Hide' : 'Show'} Preview
+          </button>
+        </div>
         <div className="grid grid-cols-12 gap-4 sm:gap-6 lg:gap-8">
         {/* ===== LEFT SIDE: Prescription Builder ===== */}
-        <div className="col-span-12 lg:col-span-7 xl:col-span-8 space-y-6 sm:space-y-8">
+        <div className={cn("col-span-12 space-y-6 sm:space-y-8", showPreview ? "lg:col-span-7 xl:col-span-8" : "lg:col-span-12 xl:col-span-12")}>
 
           {!profileStatus.loading && (!profileStatus.isVerified || !profileStatus.isProfileComplete) && (
             <div className="rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/30 p-4 flex items-start gap-3">
@@ -910,13 +916,7 @@ function NewPrescriptionForm() {
         </div>
 
         {/* ===== RIGHT SIDE: Live Preview Panel ===== */}
-        <aside className="col-span-12 lg:col-span-5 xl:col-span-4">
-          <div className="sm:hidden flex justify-end mb-3">
-            <button type="button" onClick={() => setShowPreview(!showPreview)} className="text-xs font-bold text-teal-600 flex items-center gap-1 px-3 py-1.5 rounded-lg bg-teal-50 dark:bg-teal-950/30 border border-teal-200 dark:border-teal-800">
-              {showPreview ? 'Hide' : 'Show'} Preview
-            </button>
-          </div>
-          <div className={`${showPreview ? 'block' : 'hidden'} sm:block`}>
+        {showPreview && <aside className="col-span-12 lg:col-span-5 xl:col-span-4">
           <div className="sticky top-8 space-y-6">
             <div className="flex items-center justify-between px-2">
               <h3 className="font-bold text-gray-500 dark:text-gray-400 flex items-center gap-2 text-sm">
@@ -1086,8 +1086,7 @@ function NewPrescriptionForm() {
               </div>
             </div>
           </div>
-          </div>
-        </aside>
+        </aside>}
       </div>
       </div>
 

@@ -1,11 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { useAdminDoctors, useClearDoctorMrAssignments, useApproveDoctor } from '@/features/dashboard/hooks';
+import { useAdminDoctors, useClearDoctorMrAssignments, useToggleDoctorVerification } from '@/features/dashboard/hooks';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { SearchBar } from '@/components/admin/DataTable';
+import { Select, SelectValue, SelectTrigger, SelectContent, SelectItem } from '@/components/ui/select';
 import { Pagination } from '@/components/ui/pagination';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -14,12 +15,14 @@ import { UserX, ShieldCheck, Eye, CheckCircle, XCircle, User, Mail, Phone, Award
 export default function AdminDoctorsPage() {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
+  const [verifiedFilter, setVerifiedFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
   const [clearDoctorId, setClearDoctorId] = useState<string | null>(null);
   const [selectedDoctor, setSelectedDoctor] = useState<any>(null);
   const [menuTarget, setMenuTarget] = useState<{ doc: any; top: number; right: number } | null>(null);
-  const { data, isLoading } = useAdminDoctors({ page, limit: 10, search });
+  const { data, isLoading } = useAdminDoctors({ page, limit: 10, search, verified: verifiedFilter !== 'all' ? verifiedFilter : undefined, status: statusFilter !== 'all' ? statusFilter : undefined });
   const clearMr = useClearDoctorMrAssignments();
-  const approve = useApproveDoctor();
+  const toggleVerify = useToggleDoctorVerification();
 
   const clearTarget = data?.data?.find((d: any) => d.id === clearDoctorId);
 
@@ -44,7 +47,27 @@ export default function AdminDoctorsPage() {
         onConfirm={() => clearDoctorId && clearMr.mutate(clearDoctorId, { onSuccess: () => setClearDoctorId(null) })}
       />
 
-      <SearchBar value={search} onChange={(v) => { setSearch(v); setPage(1); }} />
+      <div className="flex flex-wrap gap-3 items-center">
+        <div className="flex-1 min-w-[200px]">
+          <SearchBar value={search} onChange={(v) => { setSearch(v); setPage(1); }} />
+        </div>
+        <Select value={verifiedFilter} onValueChange={(v) => { setVerifiedFilter(v); setPage(1); }}>
+          <SelectTrigger className="w-[140px]"><SelectValue placeholder="Verified" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All</SelectItem>
+            <SelectItem value="verified">Verified</SelectItem>
+            <SelectItem value="unverified">Unverified</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setPage(1); }}>
+          <SelectTrigger className="w-[140px]"><SelectValue placeholder="Status" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All</SelectItem>
+            <SelectItem value="active">Active</SelectItem>
+            <SelectItem value="inactive">Inactive</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
       {isLoading ? (
         <div className="space-y-3">{[1, 2, 3].map(i => <div key={i} className="h-12 bg-gray-200 dark:bg-gray-800 rounded-lg animate-pulse" />)}</div>
       ) : (
@@ -139,15 +162,14 @@ export default function AdminDoctorsPage() {
             >
               <Eye className="h-4 w-4 text-blue-500" /> View Details
             </button>
-            {!menuTarget.doc.user?.isVerified && (
-              <button
-                disabled={approve.isPending}
-                onClick={() => { approve.mutate(menuTarget.doc.user.id); setMenuTarget(null); }}
-                className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors disabled:opacity-50"
-              >
-                <ShieldCheck className="h-4 w-4 text-emerald-500" /> Approve Doctor
-              </button>
-            )}
+            <button
+              disabled={toggleVerify.isPending}
+              onClick={() => { toggleVerify.mutate(menuTarget.doc.user.id); setMenuTarget(null); }}
+              className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors disabled:opacity-50"
+            >
+              <ShieldCheck className={`h-4 w-4 ${menuTarget.doc.user?.isVerified ? 'text-amber-500' : 'text-emerald-500'}`} />
+              {menuTarget.doc.user?.isVerified ? 'Unverify Doctor' : 'Approve Doctor'}
+            </button>
             <div className="border-t border-gray-100 dark:border-gray-800 my-1" />
             <button
               disabled={(menuTarget.doc.mrAssignments || []).length === 0 || clearMr.isPending}
@@ -268,18 +290,16 @@ export default function AdminDoctorsPage() {
 
               {/* Actions */}
               <div className="flex items-center gap-3 pt-2 border-t border-gray-100 dark:border-gray-800/50">
-                {!selectedDoctor.user?.isVerified && (
-                  <Button
-                    className="flex-1 gradient-primary text-white shadow-glow hover:opacity-90"
-                    disabled={approve.isPending}
-                    onClick={() => {
-                      approve.mutate(selectedDoctor.user.id, { onSuccess: () => setSelectedDoctor(null) });
-                    }}
-                  >
-                    <ShieldCheck className="h-4 w-4 mr-2" />
-                    {approve.isPending ? 'Approving...' : 'Approve Doctor'}
-                  </Button>
-                )}
+                <Button
+                  className="flex-1 gradient-primary text-white shadow-glow hover:opacity-90"
+                  disabled={toggleVerify.isPending}
+                  onClick={() => {
+                    toggleVerify.mutate(selectedDoctor.user.id, { onSuccess: () => setSelectedDoctor(null) });
+                  }}
+                >
+                  <ShieldCheck className="h-4 w-4 mr-2" />
+                  {toggleVerify.isPending ? 'Updating...' : selectedDoctor.user?.isVerified ? 'Unverify Doctor' : 'Approve Doctor'}
+                </Button>
                 <Button variant="outline" onClick={() => setSelectedDoctor(null)} className="flex-1">
                   Close
                 </Button>

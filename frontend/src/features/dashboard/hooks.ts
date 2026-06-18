@@ -23,7 +23,7 @@ export const useAdminDashboard = () =>
     queryFn: dashboardApi.getAdminDashboard,
   });
 
-export const useAdminDoctors = (params?: { page?: number; limit?: number; search?: string }) =>
+export const useAdminDoctors = (params?: { page?: number; limit?: number; search?: string; verified?: string; status?: string }) =>
   useQuery({
     queryKey: [...dashboardKeys.adminDoctors, params],
     queryFn: () => dashboardApi.getAdminDoctors(params),
@@ -85,6 +85,20 @@ export const useApproveDoctor = () => {
     },
     onError: (err: any) => {
       toast.error(err.response?.data?.message || 'Failed to approve doctor');
+    },
+  });
+};
+
+export const useToggleDoctorVerification = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: dashboardApi.toggleDoctorVerification,
+    onSuccess: (data) => {
+      toast.success(data.message || 'Doctor verification updated');
+      queryClient.invalidateQueries({ queryKey: dashboardKeys.adminDoctors });
+    },
+    onError: (err: any) => {
+      toast.error(err.response?.data?.message || 'Failed to update verification');
     },
   });
 };

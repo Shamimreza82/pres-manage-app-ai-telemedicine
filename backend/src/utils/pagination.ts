@@ -7,13 +7,6 @@ export interface PaginationParams {
   search: string;
 }
 
-export interface PaginationParams {
-  page: number;
-  limit: number;
-  skip: number;
-  search: string;
-}
-
 export interface PaginationParamsExtended extends PaginationParams {
   status?: string;
   planId?: string;

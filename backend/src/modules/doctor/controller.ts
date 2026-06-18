@@ -118,11 +118,3 @@ export const confirmSubscription = async (req: AuthRequest, res: Response, next:
   }
 };
 
-export const toggleStatus = async (req: AuthRequest, res: Response, next: NextFunction) => {
-  try {
-    await doctorService.toggleDoctorStatus(req.params.id as string);
-    sendSuccess(res, { message: 'Status updated' });
-  } catch (error) {
-    next(error);
-  }
-};

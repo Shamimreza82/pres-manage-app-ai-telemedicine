@@ -101,13 +101,13 @@ export const generatePrescriptionPDF = async (data: {
       { text: drName, size: PX(18), bold: true },
     ];
     const deg = (data.doctor.degree || []).join(', ');
-    if (deg) LH_ITEMS.push({ text: deg, size: PX(10), bold: true });
+    if (deg) LH_ITEMS.push({ text: deg, size: PX(11), bold: true });
     const spec = (data.doctor.specialization || []).join(', ');
-    if (spec) LH_ITEMS.push({ text: spec, size: PX(9), bold: false });
-    if (data.doctor.clinicName) LH_ITEMS.push({ text: data.doctor.clinicName, size: PX(9), bold: false });
-    if (data.doctor.clinicAddress) LH_ITEMS.push({ text: data.doctor.clinicAddress, size: PX(9), bold: false });
-    if (data.doctor.bmdcRegNo) LH_ITEMS.push({ text: `BMDC: ${data.doctor.bmdcRegNo}`, size: PX(9), bold: false });
-    if (data.doctor.phone) LH_ITEMS.push({ text: data.doctor.phone, size: PX(9), bold: false });
+    if (spec) LH_ITEMS.push({ text: spec, size: PX(10), bold: false });
+    if (data.doctor.clinicName) LH_ITEMS.push({ text: data.doctor.clinicName, size: PX(10), bold: false });
+    if (data.doctor.clinicAddress) LH_ITEMS.push({ text: data.doctor.clinicAddress, size: PX(10), bold: false });
+    if (data.doctor.bmdcRegNo) LH_ITEMS.push({ text: `BMDC: ${data.doctor.bmdcRegNo}`, size: PX(10), bold: false });
+    if (data.doctor.phone) LH_ITEMS.push({ text: data.doctor.phone, size: PX(10), bold: false });
 
     let ly = 0;
     LH_ITEMS.forEach((item) => {
@@ -128,23 +128,23 @@ export const generatePrescriptionPDF = async (data: {
 
     tryImg(data.doctor.clinicLogo, lx + CONTENT_W - PX(48), 0, PX(48));
     if (data.doctor.clinicLogo) {
-      doc.fontSize(PX(7)).font(FONT_BOLD).fillColor('#000')
+      doc.fontSize(PX(8)).font(FONT_BOLD).fillColor('#000')
         .text('Forwarded by PRESMANAGE', lx + CONTENT_W - PX(60), PX(50), { width: PX(60), align: 'right' });
-      doc.fontSize(PX(8)).font(FONT_REG).fillColor('#000')
+      doc.fontSize(PX(9)).font(FONT_REG).fillColor('#000')
         .text(`Rx: ${data.prescriptionNo}`, lx + CONTENT_W - PX(60), PX(64), { width: PX(60), align: 'right' })
         .text(dateStr, lx + CONTENT_W - PX(60), PX(74), { width: PX(60), align: 'right' });
-      if (updateStr) doc.fontSize(PX(7)).font(FONT_REG).fillColor('#000').text(updateStr, lx + CONTENT_W - PX(60), PX(84), { width: PX(60), align: 'right' });
+      if (updateStr) doc.fontSize(PX(8)).font(FONT_REG).fillColor('#000').text(updateStr, lx + CONTENT_W - PX(60), PX(84), { width: PX(60), align: 'right' });
     } else {
       doc.roundedRect(lx + CONTENT_W - PX(48), 0, PX(40), PX(40), PX(6)).fill('#000');
-      doc.fill('#fff').fontSize(PX(9)).font(FONT_BOLD).text('RX', lx + CONTENT_W - PX(40), PX(14), { width: PX(24), align: 'center' });
-      doc.fill('#000').fontSize(PX(7)).font(FONT_BOLD).text('Forwarded by PRESMANAGE', lx + CONTENT_W - PX(60), PX(42), { width: PX(60), align: 'right' });
-      doc.fontSize(PX(8)).font(FONT_REG).fillColor('#000')
+      doc.fill('#fff').fontSize(PX(10)).font(FONT_BOLD).text('RX', lx + CONTENT_W - PX(40), PX(14), { width: PX(24), align: 'center' });
+      doc.fill('#000').fontSize(PX(8)).font(FONT_BOLD).text('Forwarded by PRESMANAGE', lx + CONTENT_W - PX(60), PX(42), { width: PX(60), align: 'right' });
+      doc.fontSize(PX(9)).font(FONT_REG).fillColor('#000')
         .text(`Rx: ${data.prescriptionNo}`, lx + CONTENT_W - PX(60), PX(56), { width: PX(60), align: 'right' })
         .text(dateStr, lx + CONTENT_W - PX(60), PX(66), { width: PX(60), align: 'right' });
-      if (updateStr) doc.fontSize(PX(7)).font(FONT_REG).fillColor('#000').text(updateStr, lx + CONTENT_W - PX(60), PX(76), { width: PX(60), align: 'right' });
+      if (updateStr) doc.fontSize(PX(8)).font(FONT_REG).fillColor('#000').text(updateStr, lx + CONTENT_W - PX(60), PX(76), { width: PX(60), align: 'right' });
     }
 
-    const lhBottom = ly + PX(10);
+    const lhBottom = ly + PX(11);
     doc.moveTo(lx, lhBottom).lineTo(lx + CONTENT_W, lhBottom).lineWidth(PX(3)).strokeColor('#000').stroke();
     let y = lhBottom + PX(24);
 
@@ -159,15 +159,15 @@ export const generatePrescriptionPDF = async (data: {
     let medY = ry + PX(30);
     meds.forEach((m: any) => {
       const prefix = m.form ? (formAbbr[m.form] || m.form.toUpperCase() + '.') : '';
-      doc.fontSize(PX(13)).font(FONT_BOLD).fillColor('#000')
+      doc.fontSize(PX(14)).font(FONT_BOLD).fillColor('#000')
         .text(`${prefix} ${m.name}${m.strength ? ` ${m.strength}` : ''}`, rx, medY, { width: RIGHT_W });
       medY += PX(18);
       const durDisplay = fmtDur(m.duration);
-      doc.fontSize(PX(12)).font(FONT_REG).fillColor('#000')
+      doc.fontSize(PX(13)).font(FONT_REG).fillColor('#000')
         .text(`${m.dosage || '—'} · ${m.frequency || '—'} · ${durDisplay}`, rx + PX(32), medY, { width: RIGHT_W - PX(32) });
       medY += PX(16);
       if (m.instructions) {
-        doc.fontSize(PX(10)).font(FONT_REG).fillColor('#000')
+        doc.fontSize(PX(11)).font(FONT_REG).fillColor('#000')
           .text(m.instructions, rx + PX(32), medY, { width: RIGHT_W - PX(32) });
         medY += PX(14);
       }
@@ -178,41 +178,41 @@ export const generatePrescriptionPDF = async (data: {
     const invs = (data.investigations || []).filter((i: any) => i.name);
     if (invs.length) {
       medY += PX(14);
-      doc.fontSize(PX(11)).font(FONT_BOLD).fillColor('#000').text('INVESTIGATIONS', rx, medY, { width: RIGHT_W });
+      doc.fontSize(PX(12)).font(FONT_BOLD).fillColor('#000').text('INVESTIGATIONS', rx, medY, { width: RIGHT_W });
       doc.moveTo(rx, medY + PX(14)).lineTo(rx + RIGHT_W, medY + PX(14)).lineWidth(2).strokeColor('#000').stroke();
       medY += PX(20);
-      doc.fontSize(PX(11)).font(FONT_REG).fillColor('#000')
+      doc.fontSize(PX(12)).font(FONT_REG).fillColor('#000')
         .text(invs.map((i: any) => i.name).join(', '), rx, medY, { width: RIGHT_W });
       medY += PX(18);
     }
 
     // Advice
     if (data.advice) {
-      medY += PX(8);
-      doc.fontSize(PX(11)).font(FONT_BOLD).fillColor('#000').text('ADVICE', rx, medY, { width: RIGHT_W });
+      medY += PX(9);
+      doc.fontSize(PX(12)).font(FONT_BOLD).fillColor('#000').text('ADVICE', rx, medY, { width: RIGHT_W });
       doc.moveTo(rx, medY + PX(14)).lineTo(rx + RIGHT_W, medY + PX(14)).lineWidth(2).strokeColor('#000').stroke();
       medY += PX(20);
-      doc.fontSize(PX(11)).font(FONT_REG).fillColor('#000').text(data.advice, rx, medY, { width: RIGHT_W });
+      doc.fontSize(PX(12)).font(FONT_REG).fillColor('#000').text(data.advice, rx, medY, { width: RIGHT_W });
       medY += PX(18);
     }
 
     // Food Advice
     if (data.foodAdvice) {
-      medY += PX(8);
-      doc.fontSize(PX(11)).font(FONT_BOLD).fillColor('#000').text('FOOD ADVICE', rx, medY, { width: RIGHT_W });
+      medY += PX(9);
+      doc.fontSize(PX(12)).font(FONT_BOLD).fillColor('#000').text('FOOD ADVICE', rx, medY, { width: RIGHT_W });
       doc.moveTo(rx, medY + PX(14)).lineTo(rx + RIGHT_W, medY + PX(14)).lineWidth(2).strokeColor('#000').stroke();
       medY += PX(20);
-      doc.fontSize(PX(11)).font(FONT_REG).fillColor('#000').text(data.foodAdvice, rx, medY, { width: RIGHT_W });
+      doc.fontSize(PX(12)).font(FONT_REG).fillColor('#000').text(data.foodAdvice, rx, medY, { width: RIGHT_W });
       medY += PX(18);
     }
 
     // Follow-up
     if (data.followUpDate) {
-      medY += PX(8);
-      doc.fontSize(PX(11)).font(FONT_BOLD).fillColor('#000').text('FOLLOW-UP', rx, medY, { width: RIGHT_W });
+      medY += PX(9);
+      doc.fontSize(PX(12)).font(FONT_BOLD).fillColor('#000').text('FOLLOW-UP', rx, medY, { width: RIGHT_W });
       doc.moveTo(rx, medY + PX(14)).lineTo(rx + RIGHT_W, medY + PX(14)).lineWidth(2).strokeColor('#000').stroke();
       medY += PX(20);
-      doc.fontSize(PX(11)).font(FONT_REG).fillColor('#000').text(
+      doc.fontSize(PX(12)).font(FONT_REG).fillColor('#000').text(
         new Date(data.followUpDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
         rx, medY, { width: RIGHT_W }
       );
@@ -223,35 +223,35 @@ export const generatePrescriptionPDF = async (data: {
 
     // Patient details
     if (data.patient) {
-      doc.fontSize(PX(9)).font(FONT_BOLD).fillColor('#000').text('PATIENT DETAILS', lx, ly2, { width: LEFT_W });
+      doc.fontSize(PX(10)).font(FONT_BOLD).fillColor('#000').text('PATIENT DETAILS', lx, ly2, { width: LEFT_W });
       ly2 += PX(14);
-      doc.fontSize(PX(11)).font(FONT_BOLD).fillColor('#000')
+      doc.fontSize(PX(12)).font(FONT_BOLD).fillColor('#000')
         .text(data.patient.fullName || '', lx, ly2, { width: LEFT_W });
       ly2 += PX(16);
-      doc.fontSize(PX(11)).font(FONT_REG).fillColor('#000')
+      doc.fontSize(PX(12)).font(FONT_REG).fillColor('#000')
         .text(`Age: ${data.patient.age || ''}Y | Sex: ${(data.patient.gender || '')?.charAt(0) || ''}`, lx, ly2, { width: LEFT_W });
       ly2 += PX(16);
     }
 
     // Symptoms
-    doc.fontSize(PX(9)).font(FONT_BOLD).fillColor('#000').text('SYMPTOMS', lx, ly2, { width: LEFT_W });
+    doc.fontSize(PX(10)).font(FONT_BOLD).fillColor('#000').text('SYMPTOMS', lx, ly2, { width: LEFT_W });
     ly2 += PX(14);
-    doc.fontSize(PX(11)).font(FONT_REG).fillColor('#000').text(data.symptoms || '—', lx, ly2, { width: LEFT_W });
+    doc.fontSize(PX(12)).font(FONT_REG).fillColor('#000').text(data.symptoms || '—', lx, ly2, { width: LEFT_W });
     ly2 += PX(18);
 
     // Vitals
-    doc.fontSize(PX(9)).font(FONT_BOLD).fillColor('#000').text('VITALS', lx, ly2, { width: LEFT_W });
+    doc.fontSize(PX(10)).font(FONT_BOLD).fillColor('#000').text('VITALS', lx, ly2, { width: LEFT_W });
     ly2 += PX(14);
-    doc.fontSize(PX(11)).font(FONT_REG).fillColor('#000').text(`BP: ${data.bloodPressure || '—'} mmHg`, lx, ly2, { width: LEFT_W });
+    doc.fontSize(PX(12)).font(FONT_REG).fillColor('#000').text(`BP: ${data.bloodPressure || '—'} mmHg`, lx, ly2, { width: LEFT_W });
     ly2 += PX(14);
-    doc.fontSize(PX(11)).font(FONT_REG).fillColor('#000').text(`HR: ${data.pulseRate || '—'} bpm`, lx, ly2, { width: LEFT_W });
+    doc.fontSize(PX(12)).font(FONT_REG).fillColor('#000').text(`HR: ${data.pulseRate || '—'} bpm`, lx, ly2, { width: LEFT_W });
     ly2 += PX(16);
 
     // Diagnosis
     if (data.diagnosis) {
-      doc.fontSize(PX(9)).font(FONT_BOLD).fillColor('#000').text('DIAGNOSIS', lx, ly2, { width: LEFT_W });
+      doc.fontSize(PX(10)).font(FONT_BOLD).fillColor('#000').text('DIAGNOSIS', lx, ly2, { width: LEFT_W });
       ly2 += PX(14);
-      doc.fontSize(PX(11)).font(FONT_REG).fillColor('#000').text(data.diagnosis, lx, ly2, { width: LEFT_W });
+      doc.fontSize(PX(12)).font(FONT_REG).fillColor('#000').text(data.diagnosis, lx, ly2, { width: LEFT_W });
       ly2 += PX(18);
     }
 
@@ -262,7 +262,7 @@ export const generatePrescriptionPDF = async (data: {
       { width: PX(72), margin: 1 }
     ).then((qr) => {
       doc.image(qr, lx, ly2, { width: PX(72) });
-      doc.fontSize(PX(9)).font(FONT_BOLD).fillColor('#000')
+      doc.fontSize(PX(10)).font(FONT_BOLD).fillColor('#000')
         .text('Scan for e-validation', lx, ly2 + PX(76), { width: PX(80) });
 
       // ---------- Signature ----------
@@ -271,10 +271,10 @@ export const generatePrescriptionPDF = async (data: {
       const sigY = PAGE_H - M - PX(60) - (data.doctor.signatureImg ? PX(50) : PX(20));
       tryImg(data.doctor.signatureImg, sigX, sigY, PX(120));
       const sigTextY = data.doctor.signatureImg ? sigY + PX(38) : sigY;
-      doc.fontSize(PX(11)).font(FONT_BOLD).fillColor('#000')
+      doc.fontSize(PX(12)).font(FONT_BOLD).fillColor('#000')
         .text(drName, sigX, sigTextY, { width: sigW, align: 'right' });
       if (data.doctor.bmdcRegNo) {
-        doc.fontSize(PX(9)).font(FONT_REG).fillColor('#000')
+        doc.fontSize(PX(10)).font(FONT_REG).fillColor('#000')
           .text(`Reg No: ${data.doctor.bmdcRegNo}`, sigX, sigTextY + PX(14), { width: sigW, align: 'right' });
       }
 

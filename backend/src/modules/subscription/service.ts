@@ -3,12 +3,11 @@ import { db } from '../../config/database';
 import { Request } from 'express';
 import { badRequest } from '../../utils/errors';
 import * as repo from './repository';
-import type { Prisma } from '@prisma/client';
 
 export const getDoctorDashboardStats = async (doctorId: string) => {
-  const [totalPatients, totalPrescriptions, monthlyAppointments, monthlyPrescriptions, monthlyData] =
+  const [totalPatients, totalPrescriptions, monthlyAppointments, monthlyPrescriptions, todaysPrescriptions, monthlyData] =
     await repo.getDoctorStats(doctorId);
-  return { totalPatients, totalPrescriptions, monthlyAppointments, monthlyPrescriptions, monthlyData };
+  return { totalPatients, totalPrescriptions, monthlyAppointments, monthlyPrescriptions, todaysPrescriptions, monthlyData };
 };
 
 export const getAdminDashboardStats = async () => {
@@ -53,7 +52,11 @@ export const deleteActivityLogs = (startDate: string, endDate: string) => {
 
 export const getAdminDoctors = (query: Request['query']) => {
   const pagination = getPaginationParams(query);
-  return repo.getAllDoctorsForAdmin(pagination);
+  const filters = {
+    verified: query.verified as string | undefined,
+    status: query.status as string | undefined,
+  };
+  return repo.getAllDoctorsForAdmin(pagination, filters);
 };
 
 export const getAdminUsers = (query: Request['query']) => {

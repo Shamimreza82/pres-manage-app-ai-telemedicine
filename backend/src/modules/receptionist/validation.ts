@@ -1,13 +1,5 @@
 import { z } from 'zod';
 
-export const createReceptionistSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-  fullName: z.string().min(2, 'Name must be at least 2 characters'),
-  phone: z.string().min(5, 'Invalid phone number'),
-  doctorId: z.string().uuid(),
-});
-
 export const createReceptionistByDoctorSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6, 'Password must be at least 6 characters'),

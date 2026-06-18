@@ -58,8 +58,8 @@ export const RecPatientForm = ({ onSuccess, defaultValues, patientId }: RecPatie
       }
       toast.success(patientId ? 'Patient updated successfully' : 'Patient added successfully');
       onSuccess?.();
-    } catch {
-      // error handled by hook
+    } catch (e) {
+      console.error(e);
     }
   };
 

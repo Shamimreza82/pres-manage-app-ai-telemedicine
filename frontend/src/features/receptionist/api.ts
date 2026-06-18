@@ -22,9 +22,6 @@ export const getAppointments = (params?: Record<string, string>) =>
 export const getAppointment = (id: string) =>
   api.get<{ success: boolean; data: Appointment }>(`/receptionist/appointments/${id}`).then((r) => r.data.data);
 
-export const getTodayAppointments = () =>
-  api.get<{ success: boolean; data: Appointment[] }>('/receptionist/appointments/today').then((r) => r.data.data);
-
 export const createAppointment = (data: {
   patientId: string; date: string; time: string;
   fee?: number; paymentStatus?: string; paymentMethod?: string; notes?: string;

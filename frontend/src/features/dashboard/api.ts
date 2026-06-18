@@ -7,7 +7,7 @@ export const getDoctorDashboard = () =>
 export const getAdminDashboard = () =>
   api.get<{ success: boolean; data: AdminDashboardData }>('/stats/admin').then((r) => r.data.data);
 
-export const getAdminDoctors = (params?: { page?: number; limit?: number; search?: string }) =>
+export const getAdminDoctors = (params?: { page?: number; limit?: number; search?: string; verified?: string; status?: string }) =>
   api.get('/stats/admin/doctors', { params }).then((r) => r.data);
 
 export const getAdminUsers = (params?: { page?: number; limit?: number; search?: string; status?: string; verified?: string; role?: string }) =>
@@ -33,6 +33,9 @@ export const toggleUserStatus = (userId: string) =>
 
 export const approveDoctor = (userId: string) =>
   api.patch(`/admin/doctors/${userId}/approve`).then((r) => r.data);
+
+export const toggleDoctorVerification = (userId: string) =>
+  api.patch(`/admin/doctors/${userId}/verify`).then((r) => r.data);
 
 export const clearDoctorMrAssignments = (doctorId: string) =>
   api.post(`/admin/doctors/${doctorId}/clear-mr`).then((r) => r.data);

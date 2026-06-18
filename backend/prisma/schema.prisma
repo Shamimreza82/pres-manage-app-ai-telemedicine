@@ -53,8 +53,6 @@ model User {
   isActive      Boolean   @default(true)            @map("is_active")
   isVerified    Boolean   @default(false)            @map("is_verified")
   refreshToken  String?                             @map("refresh_token")
-  resetToken    String?                             @map("reset_token")
-  resetTokenExp DateTime?                           @map("reset_token_exp")
   createdAt     DateTime  @default(now())            @map("created_at")
   updatedAt     DateTime  @updatedAt                 @map("updated_at")
 
@@ -239,8 +237,6 @@ model Investigation {
   id            String       @id @default(uuid())
   prescriptionId String                                   @map("prescription_id")
   name          String
-  type          String?
-  result        String?
   notes         String?
   createdAt     DateTime     @default(now())               @map("created_at")
 
@@ -302,7 +298,6 @@ model Subscription {
   prescriptionLimit Int            @default(100)                        @map("prescription_limit")
   startDate     DateTime           @default(now())                     @map("start_date")
   endDate       DateTime?                                               @map("end_date")
-  stripeSubId   String?                                                 @map("stripe_sub_id")
   createdAt     DateTime           @default(now())                     @map("created_at")
   updatedAt     DateTime           @updatedAt                          @map("updated_at")
 

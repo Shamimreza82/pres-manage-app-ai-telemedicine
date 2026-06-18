@@ -156,6 +156,9 @@ export const updateUserStatus = (userId: string, isActive: boolean) =>
 export const verifyUser = (userId: string) =>
   db.user.update({ where: { id: userId }, data: { isVerified: true } });
 
+export const updateUserVerification = (userId: string, isVerified: boolean) =>
+  db.user.update({ where: { id: userId }, data: { isVerified } });
+
 export const deleteUser = (userId: string) =>
   db.user.delete({ where: { id: userId } });
 
@@ -183,6 +186,8 @@ export const getAllSubscriptions = (pagination: PaginationParams) => {
     db.subscription.count({ where }),
   ] as const);
 };
+
+
 
 export const updateSubscription = (id: string, data: { plan?: string; status?: string; patientLimit?: number; prescriptionLimit?: number }) =>
   db.subscription.update({ where: { id }, data: data as any });

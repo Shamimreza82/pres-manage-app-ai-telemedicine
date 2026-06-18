@@ -1,17 +1,9 @@
 import { api } from '@/lib/axios';
-import { LoginInput, RegisterInput, AuthResponse } from './types';
+export const login = (data: { email: string; password: string }) =>
+  api.post<{ success: boolean; data: { user: any; tokens: { accessToken: string; refreshToken: string } } }>('/auth/login', data).then((r) => r.data);
 
-export const login = (data: LoginInput) =>
-  api.post<AuthResponse>('/auth/login', data).then((r) => r.data);
-
-export const register = (data: RegisterInput) =>
-  api.post<AuthResponse>('/auth/register', data).then((r) => r.data);
-
-export const getMe = () =>
-  api.get<{ success: boolean; data: any }>('/auth/me').then((r) => r.data.data);
+export const register = (data: { email: string; password: string; fullName: string }) =>
+  api.post<{ success: boolean; data: { user: any; tokens: { accessToken: string; refreshToken: string } } }>('/auth/register', data).then((r) => r.data);
 
 export const logout = () =>
   api.post('/auth/logout');
-
-export const changePassword = (data: { currentPassword: string; newPassword: string }) =>
-  api.post('/auth/change-password', data);

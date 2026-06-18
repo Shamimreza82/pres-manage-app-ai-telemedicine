@@ -18,8 +18,6 @@ export const loginSchema = z.object({
   password: passwordField,
 });
 
-export type LoginInput = z.infer<typeof loginSchema>;
-
 // 3. Register Schema (Extends Login Schema)
 export const registerSchema = loginSchema
   .extend({
@@ -36,4 +34,3 @@ export const registerSchema = loginSchema
     path: ['confirmPassword'],
   });
 
-export type RegisterInput = z.infer<typeof registerSchema>;

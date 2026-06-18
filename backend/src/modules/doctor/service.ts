@@ -158,8 +158,3 @@ export const confirmSubscription = async (subscriptionId: string) => {
   });
 };
 
-export const toggleDoctorStatus = async (userId: string) => {
-  const user = await repo.toggleUserStatus(userId, true);
-  if (!user) throw notFound('User not found');
-  return repo.toggleUserStatus(userId, !user.isActive);
-};

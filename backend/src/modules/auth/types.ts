@@ -15,12 +15,4 @@ export interface Tokens {
   refreshToken: string;
 }
 
-export interface AuthResponse {
-  user: {
-    id: string;
-    email: string;
-    role: string;
-    doctorId?: string;
-  };
-  tokens: Tokens;
-}
+

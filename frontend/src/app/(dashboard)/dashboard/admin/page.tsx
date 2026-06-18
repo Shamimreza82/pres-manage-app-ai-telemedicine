@@ -2,7 +2,6 @@
 
 import { useAdminDashboard } from '@/features/dashboard/hooks';
 import { StatsCard } from '@/features/dashboard/components/StatsCard';
-import { Badge } from '@/components/ui/badge';
 import { Users, Activity, DollarSign, Shield, Clock } from 'lucide-react';
 
 export default function AdminDashboardPage() {

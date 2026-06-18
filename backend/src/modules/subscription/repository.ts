@@ -3,12 +3,14 @@ import { db } from '../../config/database';
 export const getDoctorStats = (doctorId: string) => {
   const now = new Date();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
   return Promise.all([
     db.patient.count({ where: { doctorId } }),
     db.prescription.count({ where: { doctorId } }),
     db.appointment.count({ where: { doctorId, date: { gte: monthStart } } }),
     db.prescription.count({ where: { doctorId, createdAt: { gte: monthStart } } }),
+    db.prescription.count({ where: { doctorId, createdAt: { gte: todayStart } } }),
     Promise.all(
       Array.from({ length: 12 }, (_, i) => {
         const ms = new Date(now.getFullYear(), i, 1);
@@ -103,15 +105,22 @@ export const getAuditLogs = (pagination: { skip: number; limit: number; search: 
   ] as const);
 };
 
-export const getAllDoctorsForAdmin = (pagination: { skip: number; limit: number; search: string }) => {
+export const getAllDoctorsForAdmin = (pagination: { skip: number; limit: number; search: string }, filters: { verified?: string; status?: string } = {}) => {
   const where: any = {};
+  const userFilter: any = {};
   if (pagination.search) {
     where.OR = [
       { fullName: { contains: pagination.search, mode: 'insensitive' } },
+      { bmdcRegNo: { contains: pagination.search, mode: 'insensitive' } },
       { clinicName: { contains: pagination.search, mode: 'insensitive' } },
       { user: { email: { contains: pagination.search, mode: 'insensitive' } } },
     ];
   }
+  if (filters.verified === 'verified') userFilter.isVerified = true;
+  if (filters.verified === 'unverified') userFilter.isVerified = false;
+  if (filters.status === 'active') userFilter.isActive = true;
+  if (filters.status === 'inactive') userFilter.isActive = false;
+  if (Object.keys(userFilter).length > 0) where.user = userFilter;
   return Promise.all([
     db.doctor.findMany({
       where,

@@ -46,9 +46,6 @@ export default function LoginPage() {
         <div className="w-full max-w-md animate-fade-in">
           {/* Logo/brand */}
           <div className="text-center mb-8">
-            {/* <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl gradient-primary shadow-glow mb-4 animate-scale-in">
-              <Stethoscope className="h-8 w-8 text-white" />
-            </div> */}
             <h1 className="text-3xl font-bold text-gradient">PresManage</h1>
             <p className="text-muted-foreground mt-1.5 text-sm">Doctor Prescription Management System</p>
           </div>

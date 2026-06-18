@@ -15,10 +15,8 @@ export const createPatientSchema = z.object({
   emergencyContact: z.string().optional(),
 });
 
-export const updatePatientSchema = createPatientSchema.partial();
-
-export const patientQuerySchema = z.object({
-  page: z.coerce.number().int().positive().optional().default(1),
-  limit: z.coerce.number().int().positive().max(100).optional().default(20),
-  search: z.string().optional().default(''),
+export const updatePatientSchema = createPatientSchema.partial().extend({
+  doctorId: z.string().uuid().optional(),
 });
+
+

@@ -13,10 +13,8 @@ export interface CreatePatientInput {
   emergencyContact?: string;
 }
 
-export interface UpdatePatientInput extends Partial<CreatePatientInput> {}
-
-export interface PatientQuery {
-  page?: number;
-  limit?: number;
-  search?: string;
+export interface UpdatePatientInput extends Partial<CreatePatientInput> {
+  doctorId?: string;
 }
+
+

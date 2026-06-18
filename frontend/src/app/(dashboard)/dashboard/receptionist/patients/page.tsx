@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRecPatients, useRecPatient } from '@/features/receptionist/hooks';
 import { Button } from '@/components/ui/button';
@@ -23,7 +23,9 @@ export default function RecPatientsPage() {
   const params = { page: String(page), limit: '20', search };
   const { data, isLoading, isError } = useRecPatients(params);
 
-  if (isError) toast.error('Failed to load patients');
+  useEffect(() => {
+    if (isError) toast.error('Failed to load patients');
+  }, [isError]);
 
   return (
     <div className="space-y-6 animate-fade-in">

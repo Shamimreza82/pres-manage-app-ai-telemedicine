@@ -135,7 +135,7 @@ function EditPrescriptionForm() {
   }, []);
 
   useEffect(() => {
-    api.get('/patients?limit=100').then((r) => setPatients(r.data.data)).catch(() => {});
+    api.get('/patients?limit=100').then((r) => setPatients(r.data.data)).catch((e) => console.error(e));
   }, []);
 
   useEffect(() => {
@@ -187,7 +187,6 @@ function EditPrescriptionForm() {
     }
   };
 
-  const meds = watch('medicines');
   const invs = watch('investigations');
 
   if (rxLoading) return <div className="flex justify-center items-center min-h-screen"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600" /></div>;
@@ -590,34 +589,34 @@ function EditPrescriptionForm() {
                 <div className="flex justify-between items-start">
                   <div className="space-y-0.5">
                     <h1 className="text-xl font-extrabold text-teal-800 dark:text-teal-300">Dr. {selectedPatient?.doctorName || 'Doctor'}</h1>
-                    <p className="text-[11px] font-bold text-gray-500">MBBS, FCPS</p>
+                    <p className="text-[12px] font-bold text-gray-500">MBBS, FCPS</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-[7px] font-bold text-teal-800 dark:text-teal-300">Forwarded by PRESMANAGE</p>
+                    <p className="text-[8px] font-bold text-teal-800 dark:text-teal-300">Forwarded by PRESMANAGE</p>
                   </div>
                 </div>
               </div>
-              <div className="p-8 grid grid-cols-12 gap-8 text-[11px]">
+              <div className="p-8 grid grid-cols-12 gap-8 text-[12px]">
                 <div className="col-span-4 border-r border-gray-100 dark:border-gray-700 pr-6 space-y-6">
                   {selectedPatient && (
                     <div>
-                      <h4 className="font-bold text-gray-400 uppercase tracking-widest text-[9px] mb-2">Patient Details</h4>
+                      <h4 className="font-bold text-gray-400 uppercase tracking-widest text-[10px] mb-2">Patient Details</h4>
                       <p className="font-bold text-gray-900 dark:text-white truncate">{selectedPatient.fullName}</p>
                       <p className="text-gray-500">Age: {selectedPatient.age}Y | Sex: {selectedPatient.gender?.charAt(0)}</p>
                     </div>
                   )}
                   <div>
-                    <h4 className="font-bold text-gray-400 uppercase tracking-widest text-[9px] mb-2">Symptoms</h4>
+                    <h4 className="font-bold text-gray-400 uppercase tracking-widest text-[10px] mb-2">Symptoms</h4>
                     <p className="text-gray-600 dark:text-gray-400">{watch('symptoms') || '—'}</p>
                   </div>
                   <div>
-                    <h4 className="font-bold text-gray-400 uppercase tracking-widest text-[9px] mb-2">Vitals</h4>
+                    <h4 className="font-bold text-gray-400 uppercase tracking-widest text-[10px] mb-2">Vitals</h4>
                     <p className="text-gray-600 dark:text-gray-400">BP: {watch('bloodPressure') || '—'} mmHg</p>
                     <p className="text-gray-600 dark:text-gray-400">HR: {watch('pulseRate') || '—'} bpm</p>
                   </div>
                   {watch('diagnosis') && (
                     <div>
-                      <h4 className="font-bold text-gray-400 uppercase tracking-widest text-[9px] mb-2">Diagnosis</h4>
+                      <h4 className="font-bold text-gray-400 uppercase tracking-widest text-[10px] mb-2">Diagnosis</h4>
                       <p className="text-gray-600 dark:text-gray-400">{watch('diagnosis')}</p>
                     </div>
                   )}
@@ -637,7 +636,7 @@ function EditPrescriptionForm() {
                         return (
                           <div key={field.id} className="relative pl-2 border-l-2 border-teal-300/50">
                             <p className="font-bold text-sm text-gray-900 dark:text-white">{getForm(m.form)} {m.name}{m.strength ? ` ${m.strength}` : ''}</p>
-                            <p className="text-gray-500 text-[10px]">{m.dosage} · {m.frequency} · {fmtDur(m.duration)}</p>
+                            <p className="text-gray-500 text-[11px]">{m.dosage} · {m.frequency} · {fmtDur(m.duration)}</p>
                           </div>
                         );
                       })
@@ -645,25 +644,25 @@ function EditPrescriptionForm() {
                   </div>
                   {invs && invs.filter((_, i) => watch(`investigations.${i}.name`)).length > 0 && (
                     <div className="mt-10">
-                      <h4 className="font-bold text-gray-800 dark:text-gray-200 text-[10px] mb-2 border-b border-gray-100 dark:border-gray-700 pb-1 uppercase tracking-widest">Investigations</h4>
+                      <h4 className="font-bold text-gray-800 dark:text-gray-200 text-[11px] mb-2 border-b border-gray-100 dark:border-gray-700 pb-1 uppercase tracking-widest">Investigations</h4>
                       <p className="text-gray-600 dark:text-gray-400">{invs.filter((_, i) => watch(`investigations.${i}.name`)).map((_, i) => watch(`investigations.${i}.name`)).join(', ')}</p>
                     </div>
                   )}
                   {watch('advice') && (
                     <div className="mt-8">
-                      <h4 className="font-bold text-gray-800 dark:text-gray-200 text-[10px] mb-2 border-b border-gray-100 dark:border-gray-700 pb-1 uppercase tracking-widest">Advice</h4>
+                      <h4 className="font-bold text-gray-800 dark:text-gray-200 text-[11px] mb-2 border-b border-gray-100 dark:border-gray-700 pb-1 uppercase tracking-widest">Advice</h4>
                       <p className="text-gray-600 dark:text-gray-400 leading-relaxed">{watch('advice')}</p>
                     </div>
                   )}
                   {watch('foodAdvice') && (
                     <div className="mt-6">
-                      <h4 className="font-bold text-gray-800 dark:text-gray-200 text-[10px] mb-2 border-b border-gray-100 dark:border-gray-700 pb-1 uppercase tracking-widest">Food Advice</h4>
+                      <h4 className="font-bold text-gray-800 dark:text-gray-200 text-[11px] mb-2 border-b border-gray-100 dark:border-gray-700 pb-1 uppercase tracking-widest">Food Advice</h4>
                       <p className="text-gray-600 dark:text-gray-400">{watch('foodAdvice')}</p>
                     </div>
                   )}
                   {watch('followUpDate') && (
                     <div className="mt-6">
-                      <h4 className="font-bold text-gray-800 dark:text-gray-200 text-[10px] mb-2 border-b border-gray-100 dark:border-gray-700 pb-1 uppercase tracking-widest">Follow-up</h4>
+                      <h4 className="font-bold text-gray-800 dark:text-gray-200 text-[11px] mb-2 border-b border-gray-100 dark:border-gray-700 pb-1 uppercase tracking-widest">Follow-up</h4>
                       <p className="text-gray-600 dark:text-gray-400">{new Date(watch('followUpDate')!).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
                     </div>
                   )}

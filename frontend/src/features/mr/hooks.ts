@@ -19,13 +19,6 @@ export const useMyDoctors = (params?: { page?: number; limit?: number; search?: 
     queryFn: () => mrApi.getMyDoctors(params),
   });
 
-export const useDoctorPatients = (doctorId: string) =>
-  useQuery({
-    queryKey: mrKeys.doctorPatients(doctorId),
-    queryFn: () => mrApi.getDoctorPatients(doctorId),
-    enabled: !!doctorId,
-  });
-
 export const useDoctorPrescriptions = (doctorId: string, params?: { page?: number; limit?: number; search?: string; dateFrom?: string; dateTo?: string }) =>
   useQuery({
     queryKey: [...mrKeys.doctorPrescriptions(doctorId), params],
@@ -37,13 +30,6 @@ export const useMrs = (params?: { page?: number; limit?: number; search?: string
   useQuery({
     queryKey: [...mrKeys.mrs, params],
     queryFn: () => mrApi.getMrs(params),
-  });
-
-export const useMrById = (id: string) =>
-  useQuery({
-    queryKey: mrKeys.mr(id),
-    queryFn: () => mrApi.getMrById(id),
-    enabled: !!id,
   });
 
 export const useDashboardStats = () =>
