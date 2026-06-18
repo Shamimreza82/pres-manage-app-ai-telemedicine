@@ -76,8 +76,8 @@ model Doctor {
   id                  String           @id @default(uuid())
   userId              String           @unique                             @map("user_id")
   fullName            String                                               @map("full_name")
-  degree              String
-  specialization      String
+  degree              String[]
+  specialization      String[]
   bmdcRegNo           String?                                              @map("bmdc_reg_no")
   clinicName          String                                               @map("clinic_name")
   clinicAddress       String                                               @map("clinic_address")
@@ -98,10 +98,8 @@ model Doctor {
   mrAssignments       DoctorMrAssignment[]
 
   @@index([fullName])
-  @@index([specialization])
   @@index([clinicName])
   @@index([createdAt])
-  @@index([specialization, createdAt])
   @@map("doctors")
 }
 
@@ -240,6 +238,8 @@ model Investigation {
   id            String       @id @default(uuid())
   prescriptionId String                                   @map("prescription_id")
   name          String
+  type          String?
+  result        String?
   notes         String?
   createdAt     DateTime     @default(now())               @map("created_at")
 

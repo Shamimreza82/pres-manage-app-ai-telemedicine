@@ -111,7 +111,7 @@ export const findAllDoctors = (pagination: PaginationParams, filters: { status?:
   }
   if (filters.status === 'active') where.user = { ...where.user, isActive: true };
   if (filters.status === 'suspended') where.user = { ...where.user, isActive: false };
-  if (filters.specialization) where.specialization = { contains: filters.specialization, mode: 'insensitive' };
+  if (filters.specialization) where.specialization = { has: filters.specialization };
 
   return Promise.all([
     db.doctor.findMany({

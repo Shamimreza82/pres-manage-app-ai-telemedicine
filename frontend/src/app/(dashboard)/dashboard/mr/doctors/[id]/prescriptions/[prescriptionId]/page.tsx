@@ -92,8 +92,8 @@ export default function PrescriptionDetailPage() {
           <div className="flex items-start justify-between">
             <div>
               <h2 className="text-lg font-bold text-gray-900 dark:text-white">{rx.doctor?.fullName}</h2>
-              <p className="text-sm text-muted-foreground">{rx.doctor?.degree}</p>
-              <p className="text-sm text-muted-foreground">{rx.doctor?.specialization}</p>
+              <p className="text-sm text-muted-foreground">{(rx.doctor?.degree || []).join(', ')}</p>
+              <p className="text-sm text-muted-foreground">{(rx.doctor?.specialization || []).join(', ')}</p>
               <p className="text-sm text-muted-foreground">BMDC: {rx.doctor?.bmdcRegNo}</p>
             </div>
             <div className="text-right">

@@ -152,7 +152,7 @@ export const getMyDoctorsPaginated = (mrId: string, pagination: PaginationParams
   if (pagination.search) {
     where.OR = [
       { fullName: { contains: pagination.search, mode: 'insensitive' } },
-      { specialization: { contains: pagination.search, mode: 'insensitive' } },
+      { specialization: { has: pagination.search } },
       { clinicName: { contains: pagination.search, mode: 'insensitive' } },
     ];
   }

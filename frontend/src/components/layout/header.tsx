@@ -21,7 +21,7 @@ export const Header = () => {
     },
     DOCTOR: {
       name: user?.doctor?.fullName?.split(' ')[0] || 'Doctor',
-      title: user?.doctor?.specialization || 'Doctor',
+      title: (user?.doctor?.specialization || []).join(', ') || 'Doctor',
       icon: null,
       initial: user?.doctor?.fullName?.charAt(0) || 'D',
     },

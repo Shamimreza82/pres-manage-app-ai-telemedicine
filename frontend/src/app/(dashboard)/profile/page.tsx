@@ -8,6 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { MultiSelect } from '@/components/ui/multi-select';
+import { DEGREES, SPECIALIZATIONS } from '@/lib/constants';
 import { Camera, Upload, Clock, Plus, X } from 'lucide-react';
 
 const DAYS = ['Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
@@ -64,7 +66,7 @@ export default function ProfilePage() {
 
   if (loading) return <div className="space-y-4">{[1, 2, 3].map((i) => <div key={i} className="h-24 bg-muted rounded animate-pulse" />)}</div>;
 
-  const update = (field: string, value: string) => setProfile((p: any) => ({ ...p, [field]: value }));
+  const update = (field: string, value: any) => setProfile((p: any) => ({ ...p, [field]: value }));
 
   return (
     <div className="max-w-3xl mx-auto space-y-6 animate-fade-in">
@@ -82,14 +84,20 @@ export default function ProfilePage() {
                 <Label>Phone</Label>
                 <Input value={profile?.phone || ''} onChange={(e) => update('phone', e.target.value)} className="h-11 premium-input" />
               </div>
-              <div className="space-y-2">
-                <Label>Degree</Label>
-                <Input value={profile?.degree || ''} onChange={(e) => update('degree', e.target.value)} className="h-11 premium-input" />
-              </div>
-              <div className="space-y-2">
-                <Label>Specialization</Label>
-                <Input value={profile?.specialization || ''} onChange={(e) => update('specialization', e.target.value)} className="h-11 premium-input" />
-              </div>
+              <MultiSelect
+                label="Degree"
+                options={DEGREES}
+                value={Array.isArray(profile?.degree) ? profile.degree : []}
+                onChange={(v) => update('degree', v)}
+                placeholder="Select degrees..."
+              />
+              <MultiSelect
+                label="Specialization"
+                options={SPECIALIZATIONS}
+                value={Array.isArray(profile?.specialization) ? profile.specialization : []}
+                onChange={(v) => update('specialization', v)}
+                placeholder="Select specializations..."
+              />
               <div className="space-y-2">
                 <Label>BMDC Reg No</Label>
                 <Input value={profile?.bmdcRegNo || ''} onChange={(e) => update('bmdcRegNo', e.target.value)} className="h-11 premium-input" />

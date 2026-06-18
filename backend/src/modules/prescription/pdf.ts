@@ -57,8 +57,8 @@ export const generatePrescriptionPDF = async (data: {
     doc.fontSize(11).font('Helvetica-Bold').fillColor('#111827')
       .text(`Dr. ${data.doctor.fullName}`, 40, 130);
     doc.fontSize(9).font('Helvetica').fillColor(gray)
-      .text(data.doctor.degree || '', 40, 145)
-      .text(data.doctor.specialization || '', 40, 158)
+      .text((data.doctor.degree || []).join(', '), 40, 145)
+      .text((data.doctor.specialization || []).join(', '), 40, 158)
       .text(`BMDC: ${data.doctor.bmdcRegNo}`, 40, 171);
     doc.fontSize(9).font('Helvetica').fillColor(gray)
       .text(`Rx: ${data.prescriptionNo}`, 350, 130, { align: 'right' })
@@ -184,7 +184,7 @@ export const generatePrescriptionPDF = async (data: {
     doc.fontSize(10).font('Helvetica-Bold').fillColor('#111827')
       .text(`Dr. ${data.doctor.fullName}`, 380, sigY + 40, { align: 'right' });
     doc.fontSize(9).font('Helvetica').fillColor(gray)
-      .text(data.doctor.degree || '', 380, sigY + 54, { align: 'right' })
+      .text((data.doctor.degree || []).join(', '), 380, sigY + 54, { align: 'right' })
       .text(`BMDC: ${data.doctor.bmdcRegNo}`, 380, sigY + 67, { align: 'right' });
 
     QRCode.toBuffer(JSON.stringify({ rxNo: data.prescriptionNo, doctor: data.doctor.fullName, patient: data.patient.fullName }), { width: 100, margin: 1 })

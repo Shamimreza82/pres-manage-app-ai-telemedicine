@@ -21,8 +21,8 @@ export interface DoctorWithDetails {
   id: string;
   userId: string;
   fullName: string;
-  degree: string;
-  specialization: string;
+  degree: string[];
+  specialization: string[];
   bmdcRegNo: string | null;
   clinicName: string;
   clinicAddress: string;

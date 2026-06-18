@@ -8,6 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
+import { MultiSelect } from '@/components/ui/multi-select';
+import { DEGREES, SPECIALIZATIONS } from '@/lib/constants';
 import {
   User, Mail, Phone, Award, Stethoscope, Building2, MapPin,
   FileText, Clock, CheckCircle, XCircle, Plus, X, Pencil,
@@ -42,8 +44,8 @@ export default function DoctorProfilePage() {
     setForm({
       fullName: p.fullName || '',
       phone: p.phone || '',
-      degree: p.degree || '',
-      specialization: p.specialization || '',
+      degree: Array.isArray(p.degree) ? p.degree : [],
+      specialization: Array.isArray(p.specialization) ? p.specialization : [],
       bmdcRegNo: p.bmdcRegNo || '',
       clinicName: p.clinicName || '',
       clinicAddress: p.clinicAddress || '',
@@ -155,8 +157,8 @@ export default function DoctorProfilePage() {
             </div>
             <p className="text-blue-100 mt-1 flex items-center gap-2">
               <Stethoscope className="h-4 w-4 shrink-0" />
-              {profile?.specialization || 'General Practitioner'}
-              {profile?.degree && <span className="hidden sm:inline">· {profile.degree}</span>}
+              {(profile?.specialization || []).join(', ') || 'General Practitioner'}
+              {profile?.degree?.length > 0 && <span className="hidden sm:inline">· {profile?.degree?.join(', ')}</span>}
             </p>
           </div>
           <Button
@@ -245,7 +247,7 @@ export default function DoctorProfilePage() {
                 </div>
                 <div className="min-w-0">
                   <p className="text-xs text-muted-foreground">Degree</p>
-                  <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{profile?.degree || '—'}</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{(profile?.degree || []).join(', ') || '—'}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -254,7 +256,7 @@ export default function DoctorProfilePage() {
                 </div>
                 <div className="min-w-0">
                   <p className="text-xs text-muted-foreground">Specialization</p>
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">{profile?.specialization || '—'}</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">{(profile?.specialization || []).join(', ') || '—'}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
@@ -481,14 +483,20 @@ export default function DoctorProfilePage() {
                 {editingSection === 'professional' && (
                   <div className="space-y-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label className="text-sm font-medium">Degree</Label>
-                        <Input value={form.degree} onChange={(e) => setForm({ ...form, degree: e.target.value })} className="h-11 premium-input" placeholder="MBBS, FCPS" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label className="text-sm font-medium">Specialization</Label>
-                        <Input value={form.specialization} onChange={(e) => setForm({ ...form, specialization: e.target.value })} className="h-11 premium-input" placeholder="Cardiology" />
-                      </div>
+                      <MultiSelect
+                        label="Degree"
+                        options={DEGREES}
+                        value={form.degree || []}
+                        onChange={(v) => setForm({ ...form, degree: v })}
+                        placeholder="Select degrees..."
+                      />
+                      <MultiSelect
+                        label="Specialization"
+                        options={SPECIALIZATIONS}
+                        value={form.specialization || []}
+                        onChange={(v) => setForm({ ...form, specialization: v })}
+                        placeholder="Select specializations..."
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label className="text-sm font-medium">BMDC Reg No</Label>

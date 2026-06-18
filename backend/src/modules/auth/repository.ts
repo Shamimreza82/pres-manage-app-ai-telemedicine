@@ -21,8 +21,8 @@ export const createUser = (data: {
         ? {
             create: {
               fullName: data.fullName,
-              degree: '',
-              specialization: '',
+              degree: [],
+              specialization: [],
               clinicName: '',
               clinicAddress: '',
               phone: '',

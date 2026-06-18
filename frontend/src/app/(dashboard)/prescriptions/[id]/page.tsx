@@ -58,7 +58,7 @@ export default function PrescriptionDetailPage() {
 
         <hr />
         <p className="font-semibold">Dr. {rx.doctor?.fullName}</p>
-        <p className="text-sm text-muted-foreground">{rx.doctor?.degree} | BMDC: {rx.doctor?.bmdcRegNo}</p>
+        <p className="text-sm text-muted-foreground">{(rx.doctor?.degree || []).join(', ')} | BMDC: {rx.doctor?.bmdcRegNo}</p>
         <hr />
 
         <div className="grid grid-cols-2 gap-4">
@@ -109,7 +109,7 @@ export default function PrescriptionDetailPage() {
 
         <div className="text-right pt-4">
           <p className="font-semibold">Dr. {rx.doctor?.fullName}</p>
-          <p className="text-sm text-muted-foreground">{rx.doctor?.degree}</p>
+          <p className="text-sm text-muted-foreground">{(rx.doctor?.degree || []).join(', ')}</p>
         </div>
       </div>
     </div>

@@ -13,7 +13,7 @@ import { AlertTriangle, Plus, Trash2, Search, X, User, Pill, FlaskConical } from
 import { useMedicineSearch, useLabTestSearch } from '@/features/medicine/hooks';
 
 type FormData = z.infer<typeof prescriptionSchema>;
-const emptyMedicine = { name: '', strength: '', dosage: '', frequency: '', duration: '' };
+const emptyMedicine = { name: '', strength: '', dosage: '', frequency: '', duration: '', instructions: '' };
 
 function NewPrescriptionForm() {
   const router = useRouter();
@@ -79,6 +79,16 @@ function NewPrescriptionForm() {
 
   const { fields: medFields, append: addMed, remove: removeMed } = useFieldArray({ control, name: 'medicines' });
   const { fields: invFields, append: addInv, remove: removeInv } = useFieldArray({ control, name: 'investigations' });
+
+  const addInvestigation = useCallback(() => {
+    const newIndex = invFields.length;
+    addInv({ name: '', notes: '' });
+    setActiveInvIndex(newIndex);
+    setInvQuery('');
+    requestAnimationFrame(() => {
+      document.querySelector<HTMLInputElement>(`[data-inv-index="${newIndex}"]`)?.focus();
+    });
+  }, [addInv, invFields.length]);
 
   const medDebounce = useRef<ReturnType<typeof setTimeout>>(undefined);
   const invDebounce = useRef<ReturnType<typeof setTimeout>>(undefined);
@@ -395,7 +405,8 @@ function NewPrescriptionForm() {
 
             <div className="space-y-4">
               {medFields.map((field, i) => (
-                <div key={field.id} className="grid grid-cols-12 gap-3 sm:gap-4 items-start">
+                <div key={field.id} className="bg-gray-50/50 dark:bg-gray-800/30 rounded-xl p-3 sm:p-4 space-y-3 border border-gray-100 dark:border-gray-700/50">
+                <div className="grid grid-cols-12 gap-3 sm:gap-4 items-start">
                     <div className="col-span-12 sm:col-span-6 md:col-span-4 space-y-1.5">
                       <label className="text-[11px] font-bold text-gray-500 uppercase ml-1">Medicine <span className="text-red-500">*</span></label>
                       <div className="relative" ref={activeMedIndex === i ? medDropdownRef : undefined}>
@@ -520,6 +531,16 @@ function NewPrescriptionForm() {
                     )}
                   </div>
                 </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-bold text-gray-500 uppercase ml-1">Instructions / নির্দেশনা</label>
+                    <textarea
+                      {...register(`medicines.${i}.instructions`)}
+                      placeholder="e.g. Before meal, Avoid dairy..."
+                      rows={2}
+                      className="w-full bg-white dark:bg-gray-900 border border-gray-200/60 dark:border-gray-700/60 rounded-xl p-3 text-sm focus:ring-2 focus:ring-teal-500/30 focus:outline-none resize-none"
+                    />
+                  </div>
+                </div>
               ))}
             </div>
 
@@ -534,7 +555,7 @@ function NewPrescriptionForm() {
           <section className="mb-6">
             <div className="flex items-center justify-between mb-4">
               <label className="text-sm font-bold text-gray-800 dark:text-gray-200">Investigations / ল্যাব টেস্ট</label>
-              <button type="button" onClick={() => addInv({ name: '', notes: '' })} className="text-xs font-bold text-teal-600 hover:text-teal-700 flex items-center gap-1">
+              <button type="button" onClick={addInvestigation} className="text-xs font-bold text-teal-600 hover:text-teal-700 flex items-center gap-1">
                 <Plus className="w-3.5 h-3.5" /> Add Test
               </button>
             </div>
@@ -559,6 +580,7 @@ function NewPrescriptionForm() {
                 {invFields.map((field, i) => (
                   <div key={field.id} className="flex items-center gap-2 flex-1 relative" ref={activeInvIndex === i ? invDropdownRef : undefined}>
                     <input
+                      data-inv-index={i}
                       value={activeInvIndex === i ? invQuery : watch(`investigations.${i}.name`)}
                       onChange={(e) => handleInvInputChange(i, e.target.value)}
                       onFocus={() => { setActiveInvIndex(i); setInvQuery(watch(`investigations.${i}.name`) || ''); }}
@@ -597,9 +619,9 @@ function NewPrescriptionForm() {
                   </div>
                 ))}
                 {invFields.length === 0 && (
-                  <div className="flex-1">
-                    <input placeholder="Search tests..." className="w-full bg-transparent border-none p-0 text-sm focus:ring-0 placeholder:text-gray-300" />
-                  </div>
+                  <button type="button" onClick={addInvestigation} className="flex-1 text-left">
+                    <input placeholder="Search tests..." className="w-full bg-transparent border-none p-0 text-sm focus:ring-0 placeholder:text-gray-300 cursor-pointer" readOnly />
+                  </button>
                 )}
               </div>
             </div>
@@ -613,13 +635,14 @@ function NewPrescriptionForm() {
                   <th className="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Medicine Name &amp; Generic</th>
                   <th className="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Dose &amp; Freq</th>
                   <th className="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Duration</th>
+                  <th className="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Instructions</th>
                   <th className="px-6 py-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200/50">
                 {medFields.filter((_, i) => watch(`medicines.${i}.name`)).length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="px-6 py-8 text-center text-sm text-gray-400">No medicines added yet</td>
+                    <td colSpan={5} className="px-6 py-8 text-center text-sm text-gray-400">No medicines added yet</td>
                   </tr>
                 ) : (
                   medFields.map((field, i) => {
@@ -637,6 +660,9 @@ function NewPrescriptionForm() {
                         </td>
                         <td className="px-6 py-5">
                           <span className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 px-3 py-1 rounded-full text-xs font-bold">{m.duration || '—'} Days</span>
+                        </td>
+                        <td className="px-6 py-5">
+                          {m.instructions ? <p className="text-xs text-gray-500 italic max-w-[200px] truncate">{m.instructions}</p> : <span className="text-xs text-gray-300">—</span>}
                         </td>
                         <td className="px-6 py-5 text-right">
                           <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -724,9 +750,9 @@ function NewPrescriptionForm() {
                     <h1 className="text-xl font-extrabold text-teal-800 dark:text-teal-300">
                       {doctorProfile?.fullName ? `Dr. ${doctorProfile.fullName}` : 'Dr. Doctor'}
                     </h1>
-                    <p className="text-[11px] font-bold text-gray-500">{doctorProfile?.degree || 'MBBS, FCPS'}</p>
-                    {doctorProfile?.specialization && (
-                      <p className="text-[10px] text-gray-400 uppercase tracking-tighter">{doctorProfile.specialization}</p>
+                    <p className="text-[11px] font-bold text-gray-500">{(doctorProfile?.degree || []).join(', ') || 'MBBS, FCPS'}</p>
+                    {(doctorProfile?.specialization || []).length > 0 && (
+                      <p className="text-[10px] text-gray-400 uppercase tracking-tighter">{(doctorProfile.specialization || []).join(', ')}</p>
                     )}
                     {doctorProfile?.clinicName && (
                       <p className="text-[10px] text-gray-400">{doctorProfile.clinicName}</p>
@@ -806,7 +832,7 @@ function NewPrescriptionForm() {
                           <div key={field.id} className="relative pl-2 border-l-2 border-teal-300/50">
                             <p className="font-bold text-sm text-gray-900 dark:text-white">{m.name}{m.strength ? ` ${m.strength}` : ''}</p>
                             <p className="text-gray-500 text-[10px]">{m.dosage} · {m.frequency} · {m.duration} Days</p>
-                            
+                            {m.instructions && <p className="text-gray-400 text-[9px] mt-0.5 italic">{m.instructions}</p>}
                           </div>
                         );
                       })

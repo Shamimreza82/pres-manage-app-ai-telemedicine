@@ -88,8 +88,8 @@ async function main() {
       doctor: {
         create: {
           fullName: 'Dr. John Doe',
-          degree: 'MBBS, FCPS (Medicine)',
-          specialization: 'Cardiology',
+          degree: ['MBBS', 'FCPS (Medicine)'],
+          specialization: ['Cardiology'],
           bmdcRegNo: 'BMDC-12345',
           clinicName: 'WellCare Medical Center',
           clinicAddress: '123 Healthcare Avenue, Dhaka',

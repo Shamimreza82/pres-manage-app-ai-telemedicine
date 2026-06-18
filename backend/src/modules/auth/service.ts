@@ -35,8 +35,8 @@ export const registerUser = async (input: RegisterInput) => {
               ? {
                   create: {
                     fullName: input.fullName,
-                    degree: '',
-                    specialization: '',
+                    degree: [],
+                    specialization: [],
                     clinicName: '',
                     clinicAddress: '',
                     phone: '',

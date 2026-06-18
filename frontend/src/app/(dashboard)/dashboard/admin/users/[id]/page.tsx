@@ -131,11 +131,11 @@ export default function AdminUserDetailPage() {
                 </div>
                 <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-900/50">
                   <div className="p-2 rounded-lg bg-purple-50 dark:bg-purple-950/30"><Building2 className="h-4 w-4 text-purple-600 dark:text-purple-400" /></div>
-                  <div><p className="text-xs text-muted-foreground">Degree</p><p className="text-sm font-medium text-gray-900 dark:text-white">{doc.degree || '—'}</p></div>
+                  <div><p className="text-xs text-muted-foreground">Degree</p><p className="text-sm font-medium text-gray-900 dark:text-white">{(doc.degree || []).join(', ') || '—'}</p></div>
                 </div>
                 <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-900/50">
                   <div className="p-2 rounded-lg bg-purple-50 dark:bg-purple-950/30"><Stethoscope className="h-4 w-4 text-purple-600 dark:text-purple-400" /></div>
-                  <div><p className="text-xs text-muted-foreground">Specialization</p><p className="text-sm font-medium text-gray-900 dark:text-white">{doc.specialization || '—'}</p></div>
+                  <div><p className="text-xs text-muted-foreground">Specialization</p><p className="text-sm font-medium text-gray-900 dark:text-white">{(doc.specialization || []).join(', ') || '—'}</p></div>
                 </div>
                 <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-900/50">
                   <div className="p-2 rounded-lg bg-purple-50 dark:bg-purple-950/30"><Badge variant="outline" className="h-4 w-4 text-xs">BMDC</Badge></div>

@@ -75,7 +75,7 @@ export default function RecPrescriptionDetailPage() {
           </CardHeader>
           <CardContent className="space-y-1 text-sm">
             <p className="font-medium text-gray-900 dark:text-white">{rx.doctor?.fullName}</p>
-            <p className="text-muted-foreground">{rx.doctor?.degree} &middot; {rx.doctor?.specialization}</p>
+            <p className="text-muted-foreground">{(rx.doctor?.degree || []).join(', ')} &middot; {(rx.doctor?.specialization || []).join(', ')}</p>
             <p className="text-muted-foreground">{rx.doctor?.clinicName}</p>
             {rx.doctor?.phone && <p className="text-muted-foreground">{rx.doctor.phone}</p>}
           </CardContent>

@@ -15,8 +15,8 @@ export interface DoctorAssignment {
     id: string;
     fullName: string;
     clinicName: string;
-    degree?: string;
-    specialization?: string;
+    degree?: string[];
+    specialization?: string[];
     phone?: string;
     user?: { email: string; isActive: boolean };
     _count?: { patients: number; prescriptions: number };

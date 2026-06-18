@@ -73,8 +73,8 @@ export default function DoctorPrescriptionsPage() {
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
               {doctor?.fullName || 'Doctor'}
             </h1>
-            {doctor?.degree && (
-              <span className="text-sm text-muted-foreground">{doctor.degree}</span>
+            {doctor?.degree?.length > 0 && (
+              <span className="text-sm text-muted-foreground">{doctor.degree.join(', ')}</span>
             )}
           </div>
           <p className="text-sm text-muted-foreground mt-1">

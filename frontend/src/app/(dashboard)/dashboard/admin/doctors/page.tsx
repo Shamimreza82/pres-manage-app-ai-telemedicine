@@ -217,11 +217,11 @@ export default function AdminDoctorsPage() {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-900/50">
                     <Award className="h-4 w-4 text-purple-600 shrink-0" />
-                    <div><p className="text-xs text-muted-foreground">Degree</p><p className="text-sm font-medium">{selectedDoctor.degree || '—'}</p></div>
+                    <div><p className="text-xs text-muted-foreground">Degree</p><p className="text-sm font-medium">{(selectedDoctor.degree || []).join(', ') || '—'}</p></div>
                   </div>
                   <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-900/50">
                     <Stethoscope className="h-4 w-4 text-purple-600 shrink-0" />
-                    <div><p className="text-xs text-muted-foreground">Specialization</p><p className="text-sm font-medium">{selectedDoctor.specialization || '—'}</p></div>
+                    <div><p className="text-xs text-muted-foreground">Specialization</p><p className="text-sm font-medium">{(selectedDoctor.specialization || []).join(', ') || '—'}</p></div>
                   </div>
                   <div className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-900/50">
                     <FileText className="h-4 w-4 text-purple-600 shrink-0" />

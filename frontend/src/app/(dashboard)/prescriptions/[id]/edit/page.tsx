@@ -69,6 +69,16 @@ function EditPrescriptionForm() {
   const { fields: medFields, append: addMed, remove: removeMed, replace: replaceMeds } = useFieldArray({ control, name: 'medicines' });
   const { fields: invFields, append: addInv, remove: removeInv, replace: replaceInvs } = useFieldArray({ control, name: 'investigations' });
 
+  const addInvestigation = useCallback(() => {
+    const newIndex = invFields.length;
+    addInv({ name: '', notes: '' });
+    setActiveInvIndex(newIndex);
+    setInvQuery('');
+    requestAnimationFrame(() => {
+      document.querySelector<HTMLInputElement>(`[data-inv-index="${newIndex}"]`)?.focus();
+    });
+  }, [addInv, invFields.length]);
+
   const medDebounce = useRef<ReturnType<typeof setTimeout>>(undefined);
   const invDebounce = useRef<ReturnType<typeof setTimeout>>(undefined);
   const medDropdownRef = useRef<HTMLDivElement>(null);
@@ -391,7 +401,7 @@ function EditPrescriptionForm() {
           <section className="mb-6">
             <div className="flex items-center justify-between mb-4">
               <label className="text-sm font-bold text-gray-800 dark:text-gray-200">Investigations / ল্যাব টেস্ট</label>
-              <button type="button" onClick={() => addInv({ name: '', notes: '' })} className="text-xs font-bold text-teal-600 hover:text-teal-700 flex items-center gap-1">
+              <button type="button" onClick={addInvestigation} className="text-xs font-bold text-teal-600 hover:text-teal-700 flex items-center gap-1">
                 <Plus className="w-3.5 h-3.5" /> Add Test
               </button>
             </div>
@@ -414,6 +424,7 @@ function EditPrescriptionForm() {
                 {invFields.map((field, i) => (
                   <div key={field.id} className="flex items-center gap-2 flex-1 relative" ref={activeInvIndex === i ? invDropdownRef : undefined}>
                     <input
+                      data-inv-index={i}
                       value={activeInvIndex === i ? invQuery : watch(`investigations.${i}.name`)}
                       onChange={(e) => handleInvInputChange(i, e.target.value)}
                       onFocus={() => { setActiveInvIndex(i); setInvQuery(watch(`investigations.${i}.name`) || ''); }}
@@ -447,7 +458,9 @@ function EditPrescriptionForm() {
                   </div>
                 ))}
                 {invFields.length === 0 && (
-                  <div className="flex-1"><input placeholder="Search tests..." className="w-full bg-transparent border-none p-0 text-sm focus:ring-0 placeholder:text-gray-300" /></div>
+                  <button type="button" onClick={addInvestigation} className="flex-1 text-left">
+                    <input placeholder="Search tests..." className="w-full bg-transparent border-none p-0 text-sm focus:ring-0 placeholder:text-gray-300 cursor-pointer" readOnly />
+                  </button>
                 )}
               </div>
             </div>

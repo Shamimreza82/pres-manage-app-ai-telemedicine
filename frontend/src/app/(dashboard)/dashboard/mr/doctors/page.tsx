@@ -77,7 +77,7 @@ export default function MrDoctorsPage() {
                       {doc.fullName}
                     </Link>
                   </TableCell>
-                  <TableCell>{doc.specialization || '—'}</TableCell>
+                  <TableCell>{(doc.specialization || []).join(', ') || '—'}</TableCell>
                   <TableCell>{doc.clinicName || '—'}</TableCell>
                   <TableCell>
                     <Badge variant="outline" className="font-mono text-xs">
