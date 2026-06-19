@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { authenticate, authorize } from '../../middlewares/auth';
 import { validateBody } from '../../middlewares/validate';
-import { createMrSchema, updateMrSchema, assignDoctorsSchema } from './validation';
+import { createMrSchema, updateMrSchema, assignDoctorsSchema, subscribeDoctorSchema } from './validation';
 import * as mrController from './controller';
 
 const router = Router();
@@ -14,7 +14,10 @@ router.get('/doctors/:doctorId/patients', authorize('MEDICAL_REPRESENTATIVE'), m
 router.get('/doctors/:doctorId/prescriptions', authorize('MEDICAL_REPRESENTATIVE'), mrController.getDoctorPrescriptions);
 router.get('/doctors/:doctorId/prescriptions/:id', authorize('MEDICAL_REPRESENTATIVE'), mrController.getDoctorPrescriptionById);
 router.get('/doctors/:doctorId/prescriptions/:id/pdf', authorize('MEDICAL_REPRESENTATIVE'), mrController.downloadDoctorPrescriptionPdf);
-router.get('/my-profile', mrController.getMyProfile);
+router.get('/subscriptions', authorize('MEDICAL_REPRESENTATIVE'), mrController.getMrSubscriptions);
+router.post('/doctors/:doctorId/subscribe', authorize('MEDICAL_REPRESENTATIVE'), validateBody(subscribeDoctorSchema), mrController.subscribeDoctor);
+router.get('/my-profile', authorize('MEDICAL_REPRESENTATIVE'), mrController.getMyProfile);
+router.put('/my-profile', authorize('MEDICAL_REPRESENTATIVE'), validateBody(updateMrSchema), mrController.updateMyProfile);
 
 router.get('/available-doctors', authorize('SUPER_ADMIN'), mrController.getAvailableDoctors);
 router.get('/', authorize('SUPER_ADMIN'), mrController.getAllMrs);

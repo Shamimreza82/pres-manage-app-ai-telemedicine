@@ -1,5 +1,11 @@
 import { api } from '@/lib/axios';
 
+export const getMyProfile = () =>
+  api.get('/mr/my-profile').then((r) => r.data.data);
+
+export const updateMyProfile = (data: { fullName?: string; phone?: string; company?: string; department?: string; designation?: string }) =>
+  api.put('/mr/my-profile', data).then((r) => r.data.data);
+
 export const getMyDoctors = (params?: { page?: number; limit?: number; search?: string }) =>
   api.get('/mr/doctors', { params }).then((r) => r.data);
 
@@ -18,7 +24,7 @@ export const getAvailableDoctors = () =>
 export const getMrs = (params?: { page?: number; limit?: number; search?: string; status?: string; verified?: string; role?: string }) =>
   api.get('/mr', { params }).then((r) => r.data);
 
-export const createMr = (data: { email: string; password: string; fullName: string; phone: string }) =>
+export const createMr = (data: { email: string; password: string; fullName: string; phone: string; company: string; department?: string; designation?: string }) =>
   api.post('/mr', data).then((r) => r.data.data);
 
 export const deleteMr = (id: string) =>
@@ -26,3 +32,9 @@ export const deleteMr = (id: string) =>
 
 export const assignDoctors = (mrId: string, data: { doctorIds: string[] }) =>
   api.post(`/mr/${mrId}/assign`, data).then((r) => r.data.data);
+
+export const getMrSubscriptions = (params?: { page?: number; limit?: number; search?: string }) =>
+  api.get('/mr/subscriptions', { params }).then((r) => r.data);
+
+export const subscribeDoctor = (doctorId: string, data: { planId: string; transactionId?: string; notes?: string }) =>
+  api.post(`/mr/doctors/${doctorId}/subscribe`, data).then((r) => r.data.data);

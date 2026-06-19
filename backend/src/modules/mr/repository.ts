@@ -6,6 +6,7 @@ export const findMrByUserId = (userId: string) =>
   db.mr.findUnique({
     where: { userId },
     include: {
+      user: { select: { id: true, email: true, isActive: true } },
       doctors: {
         include: {
           doctor: {
@@ -83,7 +84,7 @@ export const createMr = (data: {
 }) =>
   db.mr.create({ data });
 
-export const updateMr = (id: string, data: { fullName?: string; phone?: string }) =>
+export const updateMr = (id: string, data: { fullName?: string; phone?: string; company?: string; department?: string; designation?: string }) =>
   db.mr.update({ where: { id }, data });
 
 export const deleteMr = (id: string) =>
@@ -182,6 +183,31 @@ export const getTodaysPrescriptionsByDoctors = (doctorIds: string[]) => {
       createdAt: { gte: today, lt: tomorrow },
     },
   });
+};
+
+export const getMrDoctorsPaginatedWithSubs = (mrId: string, pagination: PaginationParams) => {
+  const where: any = {
+    mrAssignments: { some: { mrId } },
+  };
+  if (pagination.search) {
+    where.OR = [
+      { fullName: { contains: pagination.search, mode: 'insensitive' } },
+      { clinicName: { contains: pagination.search, mode: 'insensitive' } },
+    ];
+  }
+  return Promise.all([
+    db.doctor.findMany({
+      where,
+      skip: pagination.skip,
+      take: pagination.limit,
+      include: {
+        user: { select: { email: true, isActive: true } },
+        _count: { select: { patients: true, prescriptions: true } },
+      },
+      orderBy: { fullName: 'asc' },
+    }),
+    db.doctor.count({ where }),
+  ] as const);
 };
 
 export const findPrescriptionForMr = (id: string, doctorIds: string[]) =>

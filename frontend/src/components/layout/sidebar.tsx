@@ -48,6 +48,8 @@ const adminMenu = [
 const mrMenu = [
   { href: '/dashboard/mr', label: 'Dashboard', icon: LayoutDashboard, gradient: 'from-teal-500 to-teal-600' },
   { href: '/dashboard/mr/doctors', label: 'Doctors', icon: Stethoscope, gradient: 'from-emerald-500 to-emerald-600' },
+  { href: '/dashboard/mr/subscriptions', label: 'Subscriptions', icon: Crown, gradient: 'from-amber-500 to-orange-500' },
+  { href: '/dashboard/mr/profile', label: 'My Profile', icon: UserRound, gradient: 'from-rose-500 to-rose-600' },
 ];
 
 const recMenu = [

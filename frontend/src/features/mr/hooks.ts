@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import * as mrApi from './api';
 
 export const mrKeys = {
+  myProfile: ['mr', 'my-profile'] as const,
   myDoctors: ['mr', 'my-doctors'] as const,
   dashboard: ['mr', 'dashboard'] as const,
   doctorPatients: (doctorId: string) => ['mr', 'doctor-patients', doctorId] as const,
@@ -11,6 +12,25 @@ export const mrKeys = {
   mrs: ['mr', 'list'] as const,
   mr: (id: string) => ['mr', id] as const,
   availableDoctors: ['mr', 'available-doctors'] as const,
+  subscriptions: ['mr', 'subscriptions'] as const,
+};
+
+export const useMyProfile = () =>
+  useQuery({
+    queryKey: mrKeys.myProfile,
+    queryFn: mrApi.getMyProfile,
+  });
+
+export const useUpdateMyProfile = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: mrApi.updateMyProfile,
+    onSuccess: () => {
+      toast.success('Profile updated successfully');
+      qc.invalidateQueries({ queryKey: mrKeys.myProfile });
+    },
+    onError: (err: any) => toast.error(err.response?.data?.message || 'Failed to update profile'),
+  });
 };
 
 export const useMyDoctors = (params?: { page?: number; limit?: number; search?: string }) =>
@@ -86,5 +106,24 @@ export const useAssignDoctors = () => {
       qc.invalidateQueries({ queryKey: mrKeys.mrs });
     },
     onError: (err: any) => toast.error(err.response?.data?.message || 'Failed to assign doctors'),
+  });
+};
+
+export const useMrSubscriptions = (params?: { page?: number; limit?: number; search?: string }) =>
+  useQuery({
+    queryKey: [...mrKeys.subscriptions, params],
+    queryFn: () => mrApi.getMrSubscriptions(params),
+  });
+
+export const useSubscribeDoctor = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ doctorId, data }: { doctorId: string; data: { planId: string; transactionId?: string; notes?: string } }) =>
+      mrApi.subscribeDoctor(doctorId, data),
+    onSuccess: () => {
+      toast.success('Subscription initiated successfully');
+      qc.invalidateQueries({ queryKey: mrKeys.subscriptions });
+    },
+    onError: (err: any) => toast.error(err.response?.data?.message || 'Failed to subscribe doctor'),
   });
 };

@@ -204,6 +204,7 @@ async function main() {
         create: {
           fullName: 'Md. Rahim Uddin',
           phone: '+8801700000002',
+          company: 'PharmaCare Ltd.',
         },
       },
     },

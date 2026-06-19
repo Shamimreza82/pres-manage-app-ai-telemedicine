@@ -50,6 +50,15 @@ export const updateMr = async (req: AuthRequest, res: Response, next: NextFuncti
   }
 };
 
+export const updateMyProfile = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const result = await mrService.updateMyProfile(req.user!.userId, req.body);
+    sendSuccess(res, result);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const deleteMr = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const result = await mrService.deleteMr(req.params.id as string);
@@ -132,6 +141,24 @@ export const downloadDoctorPrescriptionPdf = async (req: AuthRequest, res: Respo
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename=prescription.pdf`);
     res.send(pdf);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getMrSubscriptions = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const { data, total, page, limit } = await mrService.getMrSubscriptionsPaginated(req.user!.userId, req.query);
+    sendPaginated(res, data, total, page, limit);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const subscribeDoctor = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const result = await mrService.subscribeDoctor(req.user!.userId, req.params.doctorId as string, req.body);
+    sendSuccess(res, result, 201);
   } catch (error) {
     next(error);
   }

@@ -3,7 +3,7 @@ import { notFound, badRequest } from '../../utils/errors';
 import { getPaginationParams } from '../../utils/pagination';
 import { db } from '../../config/database';
 import * as repo from './repository';
-import { CreateMrInput, UpdateMrInput, AssignDoctorsInput } from './types';
+import { CreateMrInput, UpdateMrInput, AssignDoctorsInput, SubscribeDoctorInput } from './types';
 import { Request } from 'express';
 import { generatePrescriptionPDF } from '../prescription/pdf';
 import type { Prisma } from '@prisma/client';
@@ -47,6 +47,9 @@ export const createMr = async (input: CreateMrInput) => {
           create: {
             fullName: input.fullName,
             phone: input.phone,
+            company: input.company,
+            department: input.department,
+            designation: input.designation,
           },
         },
       },
@@ -62,6 +65,12 @@ export const updateMr = async (id: string, input: UpdateMrInput) => {
   const mr = await repo.findMrById(id);
   if (!mr) throw notFound('MR not found');
   return repo.updateMr(id, input);
+};
+
+export const updateMyProfile = async (userId: string, input: UpdateMrInput) => {
+  const mr = await repo.findMrByUserId(userId);
+  if (!mr) throw notFound('MR profile not found');
+  return repo.updateMr(mr.id, input);
 };
 
 export const deleteMr = async (id: string) => {
@@ -134,4 +143,99 @@ export const downloadDoctorPrescriptionPdf = async (mrUserId: string, doctorId: 
   const rx = await getDoctorPrescriptionById(mrUserId, doctorId, prescriptionId);
   const pdfData = { ...rx, createdAt: rx.createdAt.toISOString(), updatedAt: rx.updatedAt?.toISOString() };
   return generatePrescriptionPDF(pdfData);
+};
+
+export const getMrSubscriptions = async (userId: string) => {
+  const mr = await repo.findMrByUserId(userId);
+  if (!mr) throw notFound('MR profile not found');
+
+  const plans = await db.plan.findMany({ where: { isActive: true }, orderBy: { price: 'asc' } });
+
+  return mr.doctors.map((assignment: any) => ({
+    doctor: assignment.doctor,
+    subscription: null,
+    plans,
+  }));
+};
+
+export const getMrSubscriptionsPaginated = async (userId: string, query: Request['query']) => {
+  const mr = await repo.findMrByUserId(userId);
+  if (!mr) throw notFound('MR profile not found');
+
+  const pagination = getPaginationParams(query);
+  const [doctors, total] = await repo.getMrDoctorsPaginatedWithSubs(mr.id, pagination);
+
+  const doctorIds = doctors.map((d: { id: string }) => d.id);
+
+  const subscriptions = await db.subscription.findMany({
+    where: { doctorId: { in: doctorIds } },
+    include: {
+      plan: true,
+      payments: { where: { paidByMrId: mr.id }, orderBy: { createdAt: 'desc' }, take: 1 },
+    },
+  });
+
+  const plans = await db.plan.findMany({ where: { isActive: true }, orderBy: { price: 'asc' } });
+
+  const data = doctors.map((doctor: any) => {
+    const sub = subscriptions.find((s: any) => s.doctorId === doctor.id);
+    return { doctor, subscription: sub || null, plans };
+  });
+
+  return { data, total, page: pagination.page, limit: pagination.limit };
+};
+
+export const subscribeDoctor = async (mrUserId: string, doctorId: string, input: SubscribeDoctorInput) => {
+  const mr = await repo.findMrByUserId(mrUserId);
+  if (!mr) throw notFound('MR profile not found');
+
+  const assigned = mr.doctors.some((d: { doctorId: string }) => d.doctorId === doctorId);
+  if (!assigned) throw badRequest('Doctor is not assigned to you');
+
+  const plan = await db.plan.findUnique({ where: { id: input.planId } });
+  if (!plan) throw badRequest('Plan not found');
+  if (!plan.isActive) throw badRequest('Plan is not available');
+
+  const endDate = plan.duration ? new Date(Date.now() + plan.duration * 24 * 60 * 60 * 1000) : null;
+  const isPaid = plan.price > 0;
+  const status = isPaid ? 'PENDING' : 'ACTIVE';
+
+  const sub = await db.subscription.upsert({
+    where: { doctorId },
+    update: {
+      planId: plan.id,
+      status,
+      patientLimit: plan.patientLimit,
+      prescriptionLimit: plan.prescriptionLimit,
+      startDate: new Date(),
+      endDate,
+    },
+    create: {
+      doctorId,
+      planId: plan.id,
+      status,
+      patientLimit: plan.patientLimit,
+      prescriptionLimit: plan.prescriptionLimit,
+      startDate: new Date(),
+      endDate,
+    },
+    include: { plan: true },
+  });
+
+  if (isPaid && input.transactionId) {
+    await db.payment.create({
+      data: {
+        subscriptionId: sub.id,
+        amount: plan.price,
+        currency: 'BDT',
+        status: 'PENDING',
+        paymentMethod: 'MANUAL',
+        transactionId: input.transactionId,
+        paidByMrId: mr.id,
+        notes: input.notes,
+      },
+    });
+  }
+
+  return sub;
 };

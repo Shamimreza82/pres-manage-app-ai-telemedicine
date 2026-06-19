@@ -120,15 +120,19 @@ model Receptionist {
 }
 
 model Mr {
-  id        String   @id @default(uuid())
-  userId    String   @unique                    @map("user_id")
-  fullName  String                              @map("full_name")
-  phone     String
-  createdAt DateTime @default(now())            @map("created_at")
-  updatedAt DateTime @updatedAt                 @map("updated_at")
+  id          String   @id @default(uuid())
+  userId      String   @unique                    @map("user_id")
+  fullName    String                              @map("full_name")
+  phone       String
+  company     String                              @map("company")
+  department  String?                             @map("department")
+  designation String?                             @map("designation")
+  createdAt   DateTime @default(now())            @map("created_at")
+  updatedAt   DateTime @updatedAt                 @map("updated_at")
 
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
   doctors   DoctorMrAssignment[]
+  payments  Payment[]
 
   @@index([fullName])
   @@index([phone])
@@ -319,12 +323,15 @@ model Payment {
   status         String
   paymentMethod  String                                    @map("payment_method")
   transactionId  String       @unique                      @map("transaction_id")
+  paidByMrId     String?                                   @map("paid_by_mr_id")
   notes          String?                                   @map("notes")
   createdAt      DateTime     @default(now())               @map("created_at")
 
   subscription   Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  mr             Mr?          @relation(fields: [paidByMrId], references: [id])
 
   @@index([subscriptionId])
+  @@index([paidByMrId])
   @@index([createdAt])
   @@map("payments")
 }

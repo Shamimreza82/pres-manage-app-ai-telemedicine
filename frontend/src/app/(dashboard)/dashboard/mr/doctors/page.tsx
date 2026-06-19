@@ -7,7 +7,7 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@
 import { Badge } from '@/components/ui/badge';
 import { SearchBar } from '@/components/admin/DataTable';
 import { Pagination } from '@/components/ui/pagination';
-import { FileText, Stethoscope, ArrowLeft, Eye, MoreHorizontal } from 'lucide-react';
+import { FileText, Stethoscope, ArrowLeft, Eye, MoreHorizontal, Crown } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
@@ -106,6 +106,9 @@ export default function MrDoctorsPage() {
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => router.push(`/dashboard/mr/doctors/${doc.id}/prescriptions`)}>
                           <Eye className="h-4 w-4" /> View Prescriptions
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => router.push('/dashboard/mr/subscriptions')}>
+                          <Crown className="h-4 w-4" /> Manage Subscription
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
