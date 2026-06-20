@@ -70,29 +70,27 @@ export default function RegisterPage() {
                 {errors.email && <p className="text-xs text-red-500">{errors.email.message}</p>}
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">Password <span className="text-red-500">*</span></Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input type={showPassword ? 'text' : 'password'} placeholder="Min 6 chars" className="pl-10 pr-11 h-11 premium-input" {...reg('password')} />
-                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
-                  {errors.password && <p className="text-xs text-red-500">{errors.password.message}</p>}
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Password <span className="text-red-500">*</span></Label>
+                <div className="relative">
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input type={showPassword ? 'text' : 'password'} placeholder="Min 6 chars" className="pl-10 pr-11 h-11 premium-input" {...reg('password')} />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
                 </div>
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">Confirm <span className="text-red-500">*</span></Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input type={showConfirm ? 'text' : 'password'} placeholder="Confirm" className="pl-10 pr-11 h-11 premium-input" {...reg('confirmPassword')} />
-                    <button type="button" onClick={() => setShowConfirm(!showConfirm)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
-                      {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
-                  {errors.confirmPassword && <p className="text-xs text-red-500">{errors.confirmPassword.message}</p>}
+                {errors.password && <p className="text-xs text-red-500">{errors.password.message}</p>}
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Confirm Password <span className="text-red-500">*</span></Label>
+                <div className="relative">
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input type={showConfirm ? 'text' : 'password'} placeholder="Confirm password" className="pl-10 pr-11 h-11 premium-input" {...reg('confirmPassword')} />
+                  <button type="button" onClick={() => setShowConfirm(!showConfirm)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
+                    {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
                 </div>
+                {errors.confirmPassword && <p className="text-xs text-red-500">{errors.confirmPassword.message}</p>}
               </div>
 
               <Button type="submit" className="w-full h-11 rounded-xl gradient-primary hover:opacity-90 text-white font-medium shadow-glow" disabled={register.isPending}>
