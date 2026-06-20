@@ -237,8 +237,8 @@ function NewPrescriptionForm() {
                 </p>
                 <p className="text-sm text-amber-700 dark:text-amber-400 mt-0.5">
                   {!profileStatus.isVerified
-                    ? 'Your account has not been verified by an admin yet.'
-                    : 'Please complete your profile before creating prescriptions.'}
+                    ?  'Please complete your profile before creating prescriptions. You must have a BMDC number added for verification.'
+                    : 'Your account has not been verified by an admin yet.'}
                 </p>
               </div>
             </div>

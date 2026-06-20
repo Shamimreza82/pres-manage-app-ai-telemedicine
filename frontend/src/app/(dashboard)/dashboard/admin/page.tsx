@@ -2,7 +2,7 @@
 
 import { useAdminDashboard } from '@/features/dashboard/hooks';
 import { StatsCard } from '@/features/dashboard/components/StatsCard';
-import { Users, Activity, DollarSign, Shield, Clock } from 'lucide-react';
+import { Users, Activity, DollarSign, Shield, Clock, UserCheck } from 'lucide-react';
 
 export default function AdminDashboardPage() {
   const { data: stats, isLoading } = useAdminDashboard();
@@ -27,9 +27,10 @@ export default function AdminDashboardPage() {
         <p className="text-sm text-muted-foreground mt-1">System overview and analytics</p>
       </div>
 
-      <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-5">
+      <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-6">
         <StatsCard title="Total Doctors" value={stats?.totalDoctors || 0} icon={Users} gradient="gradient-primary" />
         <StatsCard title="Active Doctors" value={stats?.activeDoctors || 0} icon={Activity} gradient="gradient-success" />
+        <StatsCard title="Pending Verification" value={stats?.pendingVerification || 0} icon={UserCheck} gradient="gradient-warning" />
         <StatsCard title="Total Patients" value={stats?.totalPatients || 0} icon={Shield} gradient="gradient-info" />
         <StatsCard title="Pending Subs" value={stats?.pendingSubscriptions || 0} icon={Clock} gradient="gradient-warning" />
         <StatsCard title="Revenue" value={`${stats?.totalRevenue || 0}`} icon={DollarSign} gradient="gradient-warning" />

@@ -14,6 +14,7 @@ export interface AdminDashboardData {
   totalPrescriptions: number;
   totalRevenue: number;
   pendingSubscriptions: number;
+  pendingVerification: number;
   planDistribution: Array<{ plan: string; _count: number }>;
   subscriptionStatusDistribution: Array<{ status: string; _count: number }>;
 }

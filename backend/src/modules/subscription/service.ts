@@ -11,7 +11,7 @@ export const getDoctorDashboardStats = async (doctorId: string) => {
 };
 
 export const getAdminDashboardStats = async () => {
-  const [totalDoctors, activeDoctors, totalPatients, totalPrescriptions, revenue, planDist, statusDist, pendingCount] =
+  const [totalDoctors, activeDoctors, totalPatients, totalPrescriptions, revenue, planDist, statusDist, pendingCount, pendingVerificationCount] =
     await repo.getAdminStats();
 
   const planIds = planDist.map((p: { planId: string }) => p.planId);
@@ -31,6 +31,7 @@ export const getAdminDashboardStats = async () => {
     totalPrescriptions,
     totalRevenue: revenue._sum.amount || 0,
     pendingSubscriptions: pendingCount,
+    pendingVerification: pendingVerificationCount,
     planDistribution,
     subscriptionStatusDistribution: statusDist,
   };

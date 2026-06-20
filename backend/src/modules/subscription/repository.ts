@@ -31,6 +31,7 @@ export const getAdminStats = () =>
     db.subscription.groupBy({ by: ['planId'], _count: true }),
     db.subscription.groupBy({ by: ['status'], _count: true }),
     db.subscription.count({ where: { status: 'PENDING' } }),
+    db.user.count({ where: { role: 'DOCTOR', isVerified: false } }),
   ] as const);
 
 export const getSubscriptionByDoctor = (doctorId: string) =>
