@@ -99,7 +99,7 @@ export const activate = async (req: AuthRequest, res: Response, next: NextFuncti
 
 export const deleteLog = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    await subscriptionService.deleteActivityLog(req.params.id);
+    await subscriptionService.deleteActivityLog(req.params.id as string);
     sendSuccess(res, { message: 'Log deleted' });
   } catch (error) {
     next(error);

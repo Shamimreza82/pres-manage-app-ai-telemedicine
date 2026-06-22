@@ -81,6 +81,9 @@ export const createMr = (data: {
   userId: string;
   fullName: string;
   phone: string;
+  company: string;
+  department?: string;
+  designation?: string;
 }) =>
   db.mr.create({ data });
 

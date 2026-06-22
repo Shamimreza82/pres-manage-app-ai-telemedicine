@@ -24,6 +24,7 @@ const createMrSchema = z.object({
   email: z.string().email('Enter a valid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
   phone: z.string().min(5, 'Phone number is required'),
+  company: z.string().min(1, 'Company is required'),
 });
 
 type CreateMrForm = z.infer<typeof createMrSchema>;
@@ -124,6 +125,11 @@ export default function AdminMedicalRepsPage() {
                   </div>
                   {errors.phone && <p className="text-xs text-red-500">{errors.phone.message}</p>}
                 </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Company <span className="text-red-500">*</span></Label>
+                <Input placeholder="Pharmaceutical company name" {...register('company')} />
+                {errors.company && <p className="text-xs text-red-500">{errors.company.message}</p>}
               </div>
               <Button type="submit" className="w-full gradient-primary text-white" disabled={createMr.isPending}>
                 {createMr.isPending ? 'Creating...' : 'Create MR'}

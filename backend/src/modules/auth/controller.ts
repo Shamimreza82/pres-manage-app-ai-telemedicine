@@ -63,7 +63,7 @@ export const getMe = async (req: AuthRequest, res: Response, next: NextFunction)
   try {
     const { findUserById } = await import('./repository');
     const user = await findUserById(req.user!.userId);
-    const { password, refreshToken, resetToken, resetTokenExp, ...safeUser } = user!;
+    const { password, refreshToken, ...safeUser } = user!;
     sendSuccess(res, safeUser);
   } catch (error) {
     next(error);

@@ -27,8 +27,8 @@ export default function EditPatientPage() {
   const initialData = {
     fullName: patient.fullName,
     age: patient.age,
-    gender: patient.gender,
-    bloodGroup: patient.bloodGroup,
+    gender: patient.gender as 'MALE' | 'FEMALE' | 'OTHER',
+    bloodGroup: patient.bloodGroup as 'A_POSITIVE' | 'A_NEGATIVE' | 'B_POSITIVE' | 'B_NEGATIVE' | 'AB_POSITIVE' | 'AB_NEGATIVE' | 'O_POSITIVE' | 'O_NEGATIVE' | undefined,
     weight: patient.weight,
     height: patient.height,
     phone: patient.phone,
