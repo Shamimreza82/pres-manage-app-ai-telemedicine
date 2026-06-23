@@ -17,6 +17,7 @@ export const createPrescriptionForDoctor = async (doctorId: string, input: Creat
 
   const subscription = await repo.getSubscriptionByDoctor(doctorId);
   if (!subscription) throw badRequest('No subscription found');
+  if (subscription.status !== 'ACTIVE') throw badRequest('Your subscription is not active');
 
   const count = await repo.countPrescriptionsByDoctor(doctorId);
   if (count >= subscription.prescriptionLimit) {

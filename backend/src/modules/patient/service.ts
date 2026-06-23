@@ -17,6 +17,7 @@ export const createPatientForDoctor = async (doctorId: string, input: CreatePati
   await checkDuplicatePhone(input.phone, doctorId);
   const subscription = await repo.getSubscriptionByDoctor(doctorId);
   if (!subscription) throw badRequest('No subscription found');
+  if (subscription.status !== 'ACTIVE') throw badRequest('Your subscription is not active');
 
   const count = await repo.countPatientsByDoctor(doctorId);
   if (count >= subscription.patientLimit) {

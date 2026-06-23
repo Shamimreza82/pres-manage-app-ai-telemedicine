@@ -221,11 +221,9 @@ export const getAllSubscriptions = (pagination: { skip: number; limit: number; s
       take: pagination.limit,
       include: {
         doctor: {
-          select: {
-            id: true,
-            fullName: true,
-            clinicName: true,
+          include: {
             user: { select: { email: true } },
+            _count: { select: { patients: true, prescriptions: true } },
           },
         },
         plan: true,

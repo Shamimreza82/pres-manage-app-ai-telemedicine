@@ -1,13 +1,21 @@
 import { Request, Response, NextFunction } from 'express';
 import { AppError } from '../utils/errors';
+import { createAuditLog } from '../utils/auditLogger';
 
 export const errorHandler = (
   err: Error,
-  _req: Request,
+  req: Request,
   res: Response,
   _next: NextFunction
 ) => {
+  const userId = (req as any).user?.userId;
+  const details: any = { error: err.message };
+
   if (err instanceof AppError) {
+    details.statusCode = err.statusCode;
+    if (err.statusCode >= 500) {
+      createAuditLog({ userId, action: 'ERROR', entity: 'System', details, ipAddress: req.ip }).catch(() => {});
+    }
     return res.status(err.statusCode).json({
       success: false,
       message: err.message,
@@ -15,6 +23,7 @@ export const errorHandler = (
   }
 
   console.error('[UNHANDLED]', err);
+  createAuditLog({ userId, action: 'ERROR', entity: 'System', details: { ...details, stack: err.stack }, ipAddress: req.ip }).catch(() => {});
   return res.status(500).json({
     success: false,
     message: 'Internal server error',

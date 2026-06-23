@@ -8,7 +8,7 @@ export const createAuditLog = ({
   details,
   ipAddress,
 }: {
-  userId: string;
+  userId?: string;
   action: string;
   entity: string;
   entityId?: string;

@@ -16,6 +16,8 @@ const actionColors: Record<string, 'default' | 'secondary' | 'success' | 'warnin
   CREATE: 'success',
   UPDATE: 'warning',
   DELETE: 'destructive',
+  ERROR: 'destructive',
+  LOGIN_FAILED: 'destructive',
 };
 
 const presets = [

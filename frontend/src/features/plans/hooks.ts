@@ -112,3 +112,16 @@ export const useRejectSubscription = () => {
     onError: (err: any) => toast.error(err.response?.data?.message || 'Failed to reject subscription'),
   });
 };
+
+export const useUpdateAdminSubscription = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: { patientLimit?: number; prescriptionLimit?: number; status?: string } }) =>
+      plansApi.updateAdminSubscription(id, data),
+    onSuccess: () => {
+      toast.success('Subscription updated');
+      qc.invalidateQueries({ queryKey: ['dashboard', 'admin', 'subscriptions'] });
+    },
+    onError: (err: any) => toast.error(err.response?.data?.message || 'Failed to update subscription'),
+  });
+};

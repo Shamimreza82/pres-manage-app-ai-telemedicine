@@ -62,10 +62,6 @@ export default function AdminMedicalRepsPage() {
   };
 
   const handleAssign = (mrId: string) => {
-    if (selectedDoctors.length === 0) {
-      toast.error('Select at least one doctor');
-      return;
-    }
     assignDoctors.mutate(
       { mrId, data: { doctorIds: selectedDoctors } },
       { onSuccess: () => { setAssignMrId(null); setSelectedDoctors([]); } }

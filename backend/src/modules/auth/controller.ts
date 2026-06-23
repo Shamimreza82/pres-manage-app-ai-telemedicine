@@ -28,6 +28,12 @@ export const login = async (req: AuthRequest, res: Response, next: NextFunction)
     });
     sendSuccess(res, result);
   } catch (error) {
+    await createAuditLog({
+      action: 'LOGIN_FAILED',
+      entity: 'User',
+      details: { email: req.body.email, error: (error as any).message },
+      ipAddress: req.ip,
+    }).catch(() => {});
     next(error);
   }
 };
