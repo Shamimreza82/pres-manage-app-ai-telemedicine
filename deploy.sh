@@ -2,7 +2,7 @@
 set -e
 
 REPO_URL="https://github.com/Shamimreza82/prescriptions-app-ai.git"
-APP_DIR="/media/algorify/Server/projects/production-current/prescriptions-app-ai"
+APP_DIR="/media/algorify/Server/projects/production-current/prescriptions-app-ai$"
 BACKEND_DIR="$APP_DIR/backend"
 FRONTEND_DIR="$APP_DIR/frontend"
 PM2_BACKEND="pres-backend"
@@ -52,8 +52,14 @@ clone_or_pull() {
 setup_env() {
     info "Environment configuration..."
 
-    if [ ! -f "$BACKEND_DIR/.env" ]; then
-        warn "backend/.env not found — creating interactively"
+    local recreate_backend=false
+    if grep -q "your-domain.com" "$BACKEND_DIR/.env" 2>/dev/null; then
+        warn "backend/.env contains placeholder values — will re-create"
+        recreate_backend=true
+    fi
+
+    if [ ! -f "$BACKEND_DIR/.env" ] || [ "$recreate_backend" = true ]; then
+        [ "$recreate_backend" = true ] && warn "Re-creating backend/.env"
 
         read -rp "  Database URL [postgresql://user:pass@localhost:5432/pres_manage?schema=public]: " db_url
         db_url="${db_url:-postgresql://user:pass@localhost:5432/pres_manage?schema=public}"
@@ -91,8 +97,14 @@ EOF
         log "backend/.env already exists — skipping"
     fi
 
-    if [ ! -f "$FRONTEND_DIR/.env.local" ]; then
-        warn "frontend/.env.local not found — creating interactively"
+    local recreate_frontend=false
+    if grep -q "your-domain.com" "$FRONTEND_DIR/.env.local" 2>/dev/null; then
+        warn "frontend/.env.local contains placeholder values — will re-create"
+        recreate_frontend=true
+    fi
+
+    if [ ! -f "$FRONTEND_DIR/.env.local" ] || [ "$recreate_frontend" = true ]; then
+        [ "$recreate_frontend" = true ] && warn "Re-creating frontend/.env.local"
 
         read -rp "  Next.js public API URL [http://123.136.30.206/api]: " api_url
         api_url="${api_url:-http://123.136.30.206/api}"
@@ -161,8 +173,8 @@ start_pm2() {
 setup_nginx() {
     info "Nginx configuration..."
 
-    read -rp "  Server domain or IP [123.136.30.206]: " server_name
-    server_name="${server_name:-123.136.30.206}"
+    read -rp "  Server domain or IP [your-domain.com]: " server_name
+    server_name="${server_name:-your-domain.com}"
 
     read -rp "  Backend port [5000]: " backend_port
     backend_port="${backend_port:-5000}"
