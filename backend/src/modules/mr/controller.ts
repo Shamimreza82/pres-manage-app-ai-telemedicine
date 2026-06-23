@@ -148,8 +148,16 @@ export const downloadDoctorPrescriptionPdf = async (req: AuthRequest, res: Respo
 
 export const getMrSubscriptions = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    const { data, total, page, limit } = await mrService.getMrSubscriptionsPaginated(req.user!.userId, req.query);
-    sendPaginated(res, data, total, page, limit);
+    const result = await mrService.getMrSubscriptionsPaginated(req.user!.userId, req.query);
+    res.status(200).json({
+      data: result.data,
+      total: result.total,
+      page: result.page,
+      limit: result.limit,
+      totalPages: Math.ceil(result.total / result.limit),
+      mr: result.mr,
+      platform: result.platform,
+    });
   } catch (error) {
     next(error);
   }

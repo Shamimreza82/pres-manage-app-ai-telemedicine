@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useMrSubscriptions, useSubscribeDoctor } from '@/features/mr/hooks';
 import { usePlans } from '@/features/plans/hooks';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
@@ -10,13 +11,16 @@ import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { SearchBar } from '@/components/admin/DataTable';
 import { Pagination } from '@/components/ui/pagination';
-import { Check, Crown, CreditCard, Loader2, Clock, XCircle, Stethoscope, AlertCircle, ArrowLeft } from 'lucide-react';
+import { Check, Crown, CreditCard, Loader2, Clock, XCircle, Stethoscope, AlertCircle, ArrowLeft, MoreHorizontal, Eye, Printer } from 'lucide-react';
 import type { MrSubscription, Plan } from '@/features/mr/types';
 import Link from 'next/link';
 
 export default function MrSubscriptionsPage() {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
+  const [menuTarget, setMenuTarget] = useState<{ item: any; top: number; right: number } | null>(null);
+  const [detailSub, setDetailSub] = useState<any>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
   const { data, isLoading } = useMrSubscriptions({ page, search: search || undefined });
   const { data: plans, isLoading: loadingPlans } = usePlans();
   const subscribeDoctor = useSubscribeDoctor();
@@ -28,6 +32,18 @@ export default function MrSubscriptionsPage() {
   const subscriptions: MrSubscription[] = data?.data ?? [];
   const total = data?.total ?? 0;
   const totalPages = data?.totalPages ?? 1;
+  const mrInfo = data?.mr;
+  const platform = data?.platform;
+
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuTarget(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
 
   const handleSearch = (val: string) => {
     setSearch(val);
@@ -154,6 +170,33 @@ export default function MrSubscriptionsPage() {
         </DialogContent>
       </Dialog>
 
+      {/* Detail Dialog */}
+      <Dialog open={!!detailSub} onOpenChange={(v) => !v && setDetailSub(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Subscription Details</DialogTitle>
+          </DialogHeader>
+          {detailSub && (
+            <div className="space-y-3 text-sm">
+              <div className="grid grid-cols-2 gap-3">
+                <div><p className="text-xs text-muted-foreground">Doctor</p><p className="font-medium">{detailSub.doctor?.fullName}</p></div>
+                <div><p className="text-xs text-muted-foreground">Clinic</p><p className="font-medium">{detailSub.doctor?.clinicName || '—'}</p></div>
+                <div><p className="text-xs text-muted-foreground">Plan</p><p className="font-medium">{detailSub.subscription?.plan?.name || 'None'}</p></div>
+                <div><p className="text-xs text-muted-foreground">Status</p>{detailSub.subscription ? statusBadge(detailSub.subscription.status) : <Badge variant="outline">None</Badge>}</div>
+                {detailSub.subscription && (
+                  <>
+                    <div><p className="text-xs text-muted-foreground">Patient Limit</p><p className="font-medium">{detailSub.subscription.patientLimit}</p></div>
+                    <div><p className="text-xs text-muted-foreground">Rx Limit</p><p className="font-medium">{detailSub.subscription.prescriptionLimit}</p></div>
+                    <div><p className="text-xs text-muted-foreground">Start Date</p><p className="font-medium">{new Date(detailSub.subscription.startDate).toLocaleDateString()}</p></div>
+                    <div><p className="text-xs text-muted-foreground">End Date</p><p className="font-medium">{detailSub.subscription.endDate ? new Date(detailSub.subscription.endDate).toLocaleDateString() : '—'}</p></div>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
       {isLoading || loadingPlans ? (
         <div className="space-y-3">
           {[1, 2, 3].map((i) => (
@@ -176,6 +219,8 @@ export default function MrSubscriptionsPage() {
                 <TableHead>Doctor</TableHead>
                 <TableHead>Clinic</TableHead>
                 <TableHead>Current Plan</TableHead>
+                <TableHead>Value</TableHead>
+                <TableHead>Subscribed</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Limits</TableHead>
                 <TableHead>Expiry</TableHead>
@@ -200,6 +245,16 @@ export default function MrSubscriptionsPage() {
                         <span className="text-muted-foreground">—</span>
                       )}
                     </TableCell>
+                    <TableCell className="font-mono text-sm">
+                      {item.subscription?.plan?.price != null
+                        ? `${Number(item.subscription.plan.price).toLocaleString()} BDT`
+                        : '—'}
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {item.subscription?.startDate
+                        ? new Date(item.subscription.startDate).toLocaleDateString()
+                        : '—'}
+                    </TableCell>
                     <TableCell>
                       {item.subscription ? statusBadge(item.subscription.status) : <Badge variant="outline">None</Badge>}
                     </TableCell>
@@ -217,12 +272,14 @@ export default function MrSubscriptionsPage() {
                     </TableCell>
                     <TableCell className="text-right">
                       <Button
+                        variant="ghost"
                         size="sm"
-                        variant={hasActiveSub ? 'outline' : hasPendingSub ? 'outline' : 'default'}
-                        disabled={hasPendingSub || subscribeDoctor.isPending}
-                        onClick={() => openSubscribe(item.doctor.id)}
+                        onClick={(e) => {
+                          const rect = (e.target as HTMLElement).closest('button')!.getBoundingClientRect();
+                          setMenuTarget(menuTarget?.item.doctor.id === item.doctor.id ? null : { item, top: rect.bottom + 4, right: window.innerWidth - rect.right });
+                        }}
                       >
-                        {subscribeDoctor.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : hasActiveSub ? 'Change' : hasPendingSub ? 'Pending' : 'Subscribe'}
+                        <MoreHorizontal className="h-4 w-4" />
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -235,6 +292,92 @@ export default function MrSubscriptionsPage() {
           </div>
         </div>
       )}
+
+      {/* Actions Menu */}
+      {menuTarget && createPortal(
+        <div
+          ref={menuRef}
+          className="fixed z-50 w-48 rounded-xl bg-white dark:bg-gray-950 border border-gray-100 dark:border-gray-800 shadow-strong py-1.5 animate-scale-in"
+          style={{ top: menuTarget.top, right: menuTarget.right }}
+        >
+          <button
+            onClick={() => { setDetailSub(menuTarget.item); setMenuTarget(null); }}
+            className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+          >
+            <Eye className="h-4 w-4 text-blue-500" /> View Details
+          </button>
+          <button
+            onClick={() => { openSubscribe(menuTarget.item.doctor.id); setMenuTarget(null); }}
+            className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+          >
+            <Crown className="h-4 w-4 text-amber-500" /> {menuTarget.item.subscription ? 'Change Plan' : 'Subscribe'}
+          </button>
+          {menuTarget.item.subscription?.status === 'ACTIVE' && (
+            <button
+              onClick={() => {
+                const item = menuTarget.item;
+                setMenuTarget(null);
+                const fmt = (d: string) => d ? new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : '—';
+                const w = window.open('', '_blank');
+                if (!w) return;
+                w.document.write(`
+                  <!DOCTYPE html>
+                  <html>
+                  <head><title>Voucher</title>
+                  <style>
+                    @page { size: A4; margin: 12mm 15mm; }
+                    body { font-family: Arial, sans-serif; color: #111; margin: 0; padding: 12mm 15mm; box-sizing: border-box; }
+                    table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 12px; }
+                    th, td { padding: 8px 12px; text-align: left; border: 1px solid #ccc; }
+                    th { background: #f3f4f6; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: #666; }
+                    td:first-child { color: #666; width: 120px; }
+                    .header { text-align: center; border-bottom: 2px solid #111; padding-bottom: 16px; margin-bottom: 24px; }
+                    .header h1 { margin: 0; font-size: 24px; }
+                    .header p { margin: 4px 0 0; font-size: 12px; color: #666; }
+                    .title { text-align: center; margin-bottom: 24px; }
+                    .title h2 { margin: 0; font-size: 16px; text-transform: uppercase; letter-spacing: 0.2em; }
+                    .title p { margin: 2px 0 0; font-size: 11px; color: #999; }
+                    .footer { border-top: 2px solid #111; padding-top: 16px; margin-top: 24px; display: flex; justify-content: space-between; align-items: end; font-size: 11px; }
+                    .sig { width: 160px; border-bottom: 1px solid #999; margin-top: 4px; }
+                    .disclaimer { text-align: center; font-size: 10px; color: #999; margin-top: 20px; }
+                  </style>
+                  </head>
+                  <body>
+                    <div class="header">
+                      <h1>${platform?.name || 'PrescribePro'}</h1>
+                      <p>${platform?.address || ''}</p>
+                      <p>${platform?.phone || ''}</p>
+                    </div>
+                    <div class="title">
+                      <h2>Voucher</h2>
+                      <p>Subscription Confirmation</p>
+                    </div>
+                    <table><tr><td style="border:none;padding:4px 12px;width:auto;color:#666;">Voucher #:</td><td style="border:none;padding:4px 12px;font-weight:bold;font-family:monospace;">VCH-${(item.subscription?.id || '').slice(0, 8).toUpperCase()}</td><td style="border:none;padding:4px 12px;width:auto;color:#666;text-align:right;">Date:</td><td style="border:none;padding:4px 12px;font-weight:bold;text-align:right;">${fmt(item.subscription?.startDate)}</td></tr></table>
+                    <table><tr><th colspan="2">Doctor Information</th></tr><tr><td>Name</td><td style="font-weight:bold">${item.doctor?.fullName || '—'}</td></tr><tr><td>BMDC No</td><td style="font-weight:bold">${item.doctor?.bmdcRegNo || '—'}</td></tr><tr><td>Clinic</td><td style="font-weight:bold">${item.doctor?.clinicName || '—'}</td></tr><tr><td>Degree</td><td style="font-weight:bold">${(item.doctor?.degree || []).join(', ') || '—'}</td></tr></table>
+                    <table><tr><th colspan="2">Subscription Details</th></tr><tr><td>Plan</td><td style="font-weight:bold">${item.subscription?.plan?.name || '—'}</td></tr><tr><td>Amount</td><td style="font-weight:bold">${item.subscription?.plan?.price != null ? Number(item.subscription.plan.price).toLocaleString() + ' BDT' : '—'}</td></tr><tr><td>Duration</td><td style="font-weight:bold">${item.subscription?.plan?.duration || '—'} days</td></tr><tr><td>Status</td><td style="font-weight:bold;color:#15803d;">ACTIVE</td></tr><tr><td>Period</td><td style="font-weight:bold">${fmt(item.subscription?.startDate)} → ${fmt(item.subscription?.endDate)}</td></tr><tr><td>Limits</td><td style="font-weight:bold">${item.subscription?.patientLimit} patients / ${item.subscription?.prescriptionLimit} prescriptions</td></tr></table>
+                    ${item.subscription?.payments?.[0] ? `<table><tr><th colspan="2">Payment Details</th></tr><tr><td>Transaction ID</td><td style="font-weight:bold;font-family:monospace;">${item.subscription.payments[0].transactionId || '—'}</td></tr><tr><td>Amount</td><td style="font-weight:bold">${item.subscription.payments[0].amount ? Number(item.subscription.payments[0].amount).toLocaleString() + ' BDT' : '—'}</td></tr><tr><td>Method</td><td style="font-weight:bold">${item.subscription.payments[0].paymentMethod || 'Manual'}</td></tr>${item.subscription.payments[0].notes ? `<tr><td>Notes</td><td style="font-weight:bold">${item.subscription.payments[0].notes}</td></tr>` : ''}</table>` : ''}
+                    <table><tr><th colspan="2">Issued By</th></tr><tr><td>MR Name</td><td style="font-weight:bold">${mrInfo?.fullName || '—'}</td></tr><tr><td>Company</td><td style="font-weight:bold">${mrInfo?.company || '—'}</td></tr><tr><td>Phone</td><td style="font-weight:bold">${mrInfo?.phone || '—'}</td></tr></table>
+                    <div class="footer">
+                      <div><p style="margin:0;font-size:11px;color:#999;">Authorized Signature</p><div class="sig"></div></div>
+                      <div style="text-align:right;"><p style="margin:0;font-size:11px;font-weight:bold;">${platform?.name || 'PrescribePro'}</p><p style="margin:0;font-size:11px;color:#999;">${platform?.address || ''}</p><p style="margin:0;font-size:11px;color:#999;">${platform?.phone || ''}</p></div>
+                    </div>
+                    <div class="disclaimer">This is a computer-generated voucher. No signature required.</div>
+                    <script>window.onload=function(){setTimeout(function(){window.print()},500)}<\/script>
+                  </body>
+                  </html>
+                `);
+                w.document.close();
+              }}
+              className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+            >
+              <Printer className="h-4 w-4 text-teal-500" /> Print Voucher
+
+            </button>
+          )}
+        </div>,
+        document.body
+      )}
+
     </div>
   );
 }

@@ -22,4 +22,9 @@ export const env = {
   db: {
     url: process.env.DATABASE_URL || '',
   },
+  platform: {
+    companyName: process.env.PLATFORM_COMPANY_NAME || 'PrescribePro',
+    address: process.env.PLATFORM_ADDRESS || '',
+    phone: process.env.PLATFORM_PHONE || '',
+  },
 } as const;

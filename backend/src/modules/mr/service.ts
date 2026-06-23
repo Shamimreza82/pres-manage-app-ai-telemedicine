@@ -2,6 +2,7 @@ import { hashPassword } from '../../utils/password';
 import { notFound, badRequest } from '../../utils/errors';
 import { getPaginationParams } from '../../utils/pagination';
 import { db } from '../../config/database';
+import { env } from '../../config/env';
 import * as repo from './repository';
 import { CreateMrInput, UpdateMrInput, AssignDoctorsInput, SubscribeDoctorInput } from './types';
 import { Request } from 'express';
@@ -182,7 +183,11 @@ export const getMrSubscriptionsPaginated = async (userId: string, query: Request
     return { doctor, subscription: sub || null, plans };
   });
 
-  return { data, total, page: pagination.page, limit: pagination.limit };
+  return {
+    data, total, page: pagination.page, limit: pagination.limit,
+    mr: { fullName: mr.fullName, phone: mr.phone, company: mr.company },
+    platform: { name: env.platform.companyName, address: env.platform.address, phone: env.platform.phone },
+  };
 };
 
 export const subscribeDoctor = async (mrUserId: string, doctorId: string, input: SubscribeDoctorInput) => {
