@@ -223,6 +223,7 @@ model Medicine {
   id            String       @id @default(uuid())
   prescriptionId String                                   @map("prescription_id")
   name          String
+  genericName   String?
   strength      String?
   form          String?
   dosage        String

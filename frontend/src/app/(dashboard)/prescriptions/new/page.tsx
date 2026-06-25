@@ -135,10 +135,11 @@ function NewPrescriptionForm() {
     invDebounce.current = setTimeout(() => setDebouncedInvQuery(value), 300);
   }, []);
 
-  const selectMedicine = useCallback((i: number, name: string, strength?: string, form?: string) => {
+  const selectMedicine = useCallback((i: number, name: string, strength?: string, form?: string, genericName?: string) => {
     setValue(`medicines.${i}.name`, name, { shouldValidate: true });
     if (strength) setValue(`medicines.${i}.strength`, strength, { shouldValidate: true });
     if (form) setValue(`medicines.${i}.form`, form, { shouldValidate: true });
+    if (genericName) setValue(`medicines.${i}.genericName`, genericName, { shouldValidate: true });
     setActiveMedIndex(null);
     setMedQuery('');
     setDebouncedMedQuery('');
@@ -573,7 +574,7 @@ function NewPrescriptionForm() {
                                   <button
                                     key={`brand-${b.id}`}
                                     type="button"
-                                    onClick={() => selectMedicine(i, b.name, b.strength, b.form)}
+                                    onClick={() => selectMedicine(i, b.name, b.strength, b.form, b.generic?.name)}
                                     className="w-full flex items-start gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors text-left border-b border-gray-50 dark:border-gray-800/50 last:border-0"
                                   >
                                     <Pill className="h-4 w-4 text-teal-500 shrink-0 mt-0.5" />
@@ -779,8 +780,8 @@ function NewPrescriptionForm() {
                     return (
                       <tr key={field.id} className="bg-white dark:bg-gray-900 hover:bg-teal-50/30 dark:hover:bg-teal-950/20 transition-colors group">
                         <td className="px-6 py-5">
-                          <p className="font-bold text-gray-900 dark:text-white">{m.name}{m.strength ? ` (${m.strength})` : ''}</p>
-                          <p className="text-xs text-gray-400">{m.strength ? `Strength: ${m.strength}` : ''}</p>
+                          <p className="font-bold text-gray-900 dark:text-white">{getForm(m.form)} {m.name}{m.strength ? ` ${m.strength}` : ''}{m.genericName ? ` (${m.genericName})` : ''}</p>
+                          <p className="text-xs text-gray-400">{m.genericName || m.strength ? `${m.genericName || ''}${m.genericName && m.strength ? ' · ' : ''}${m.strength || ''}` : ''}</p>
                         </td>
                         <td className="px-6 py-5">
                           <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">{m.dosage || '—'}</p>
@@ -965,7 +966,7 @@ function NewPrescriptionForm() {
                         if (!m.name) return null;
                         return (
                           <div key={field.id} className="relative pl-2 border-l-2 border-teal-300/50">
-                            <p className="font-bold text-sm text-gray-900 dark:text-white">{getForm(m.form)} {m.name}{m.strength ? ` ${m.strength}` : ''}</p>
+                            <p className="font-bold text-sm text-gray-900 dark:text-white">{getForm(m.form)} {m.name}{m.strength ? ` ${m.strength}` : ''}{m.genericName ? ` (${m.genericName})` : ''}</p>
                             <p className="text-gray-500 text-[10px]">{m.dosage} · {m.frequency || '—'} · {fmtDur(m.duration)}</p>
                             {m.instructions && <p className="text-gray-400 text-[9px] mt-0.5 italic">{m.instructions}</p>}
                           </div>

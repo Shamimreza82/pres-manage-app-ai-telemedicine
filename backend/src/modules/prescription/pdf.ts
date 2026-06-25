@@ -169,7 +169,7 @@ export const generatePrescriptionPDF = async (data: {
     meds.forEach((m: any) => {
       const prefix = m.form ? (formAbbr[m.form] || m.form.toUpperCase() + '.') : '';
       doc.fontSize(PX(14)).font(FONT_BOLD).fillColor('#000')
-        .text(`${prefix} ${m.name}${m.strength ? ` ${m.strength}` : ''}`, rx, medY, { width: RIGHT_W });
+        .text(`${prefix} ${m.name}${m.strength ? ` ${m.strength}` : ''}${m.genericName ? ` (${m.genericName})` : ''}`, rx, medY, { width: RIGHT_W });
       medY += PX(18);
       const durDisplay = fmtDur(m.duration);
       doc.fontSize(PX(13)).font(FONT_REG).fillColor('#000')

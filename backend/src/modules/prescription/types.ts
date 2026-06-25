@@ -1,5 +1,6 @@
 export interface MedicineInput {
   name: string;
+  genericName?: string;
   strength: string;
   dosage: string;
   frequency?: string;

@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 const medicineSchema = z.object({
   name: z.string().min(1, 'Medicine name is required'),
+  genericName: z.string().optional(),
   strength: z.string().min(1, 'Strength is required'),
   form: z.string().optional(),
   dosage: z.string().min(1, 'Dosage is required'),

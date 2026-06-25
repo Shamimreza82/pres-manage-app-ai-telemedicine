@@ -152,7 +152,7 @@ export default function PrescriptionDetailPage() {
                   const prefix = getForm(m.form);
                   return (
                     <div key={i} className="mb-3 pb-2 border-b border-dashed border-gray-400 last:border-0">
-                      <p className="text-[14px] font-extrabold text-black">{prefix} {m.name}{m.strength ? ` ${m.strength}` : ''}</p>
+                      <p className="text-[14px] font-extrabold text-black">{prefix} {m.name}{m.strength ? ` ${m.strength}` : ''}{m.genericName ? <span className="font-semibold text-black"> ({m.genericName})</span> : ''}</p>
                       <p className="text-[13px] font-semibold text-black ml-8">{m.dosage || '—'} · {m.frequency || '—'} · {fmtDur(m.duration)}</p>
                       {m.instructions && <p className="text-[11px] font-semibold text-black ml-8">{m.instructions}</p>}
                     </div>
