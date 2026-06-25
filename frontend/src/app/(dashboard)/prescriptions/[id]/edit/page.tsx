@@ -11,6 +11,7 @@ import { z } from 'zod';
 import { api } from '@/lib/axios';
 import { AlertTriangle, Plus, Trash2, Search, X, User, Pill, FlaskConical } from 'lucide-react';
 import { useMedicineSearch, useLabTestSearch } from '@/features/medicine/hooks';
+import { formatFollowUp } from '@/lib/utils';
 
 type FormData = z.infer<typeof prescriptionSchema>;
 const formAbbr: Record<string, string> = {
@@ -662,8 +663,7 @@ function EditPrescriptionForm() {
                   )}
                   {watch('followUpDate') && (
                     <div className="mt-6">
-                      <h4 className="font-bold text-gray-800 dark:text-gray-200 text-[11px] mb-2 border-b border-gray-100 dark:border-gray-700 pb-1 uppercase tracking-widest">Follow-up</h4>
-                      <p className="text-gray-600 dark:text-gray-400">{new Date(watch('followUpDate')!).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                      <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">Follow-up: {formatFollowUp(watch('followUpDate')!)}</p>
                     </div>
                   )}
                 </div>

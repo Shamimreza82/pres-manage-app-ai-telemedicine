@@ -6,6 +6,7 @@ import { usePrescription } from '@/features/prescriptions/hooks';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Printer, Pencil, Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { formatFollowUp } from '@/lib/utils';
 import QRCodeLib from 'qrcode';
 
 const formAbbr: Record<string, string> = {
@@ -176,8 +177,7 @@ export default function PrescriptionDetailPage() {
 
             {rx.followUpDate && (
               <div className="mt-6">
-                <p className="text-[12px] font-extrabold text-black uppercase tracking-wider border-b-2 border-black pb-1 mb-2">FOLLOW-UP</p>
-                <p className="text-[12px] font-semibold text-black">{new Date(rx.followUpDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                <p className="text-[12px] font-semibold text-black">Follow-up: {formatFollowUp(rx.followUpDate)}</p>
               </div>
             )}
           </div>

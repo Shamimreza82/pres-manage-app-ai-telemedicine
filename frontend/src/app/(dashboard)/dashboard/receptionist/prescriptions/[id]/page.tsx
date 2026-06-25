@@ -12,6 +12,7 @@ import {
   Wind, Activity, FileText, Stethoscope, Pill, Beaker,
   ClipboardList, MessageSquare, Utensils,
 } from 'lucide-react';
+import { formatFollowUp } from '@/lib/utils';
 
 export default function RecPrescriptionDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -241,14 +242,9 @@ export default function RecPrescriptionDetailPage() {
         <Card className="premium-card">
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-rose-600" /> Follow-up
+              <Calendar className="h-4 w-4 text-rose-600" /> Follow-up: {formatFollowUp(rx.followUpDate)}
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <p className="text-sm font-medium text-gray-900 dark:text-white">
-              {new Date(rx.followUpDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-            </p>
-          </CardContent>
         </Card>
       )}
     </div>

@@ -28,6 +28,16 @@ const fmtDur = (d?: string) => {
 
 const PX = (px: number) => px * 72 / 96;
 
+const formatFollowUp = (date: Date): string => {
+  const formatted = date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  const now = new Date();
+  const diff = Math.ceil((date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+  if (diff < 0) return `${formatted} (${Math.abs(diff)} days ago)`;
+  if (diff === 0) return `${formatted} (Today)`;
+  if (diff === 1) return `${formatted} (Tomorrow)`;
+  return `${formatted} (${diff} days)`;
+};
+
 export const generatePrescriptionPDF = async (data: {
   doctor: any;
   patient: any;
@@ -209,13 +219,11 @@ export const generatePrescriptionPDF = async (data: {
     // Follow-up
     if (data.followUpDate) {
       medY += PX(9);
-      doc.fontSize(PX(12)).font(FONT_BOLD).fillColor('#000').text('FOLLOW-UP', rx, medY, { width: RIGHT_W });
-      doc.moveTo(rx, medY + PX(14)).lineTo(rx + RIGHT_W, medY + PX(14)).lineWidth(2).strokeColor('#000').stroke();
-      medY += PX(20);
       doc.fontSize(PX(12)).font(FONT_REG).fillColor('#000').text(
-        new Date(data.followUpDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+        'Follow-up: ' + formatFollowUp(new Date(data.followUpDate)),
         rx, medY, { width: RIGHT_W }
       );
+      medY += PX(18);
     }
 
     // ---------- Left Column ----------
