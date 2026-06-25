@@ -6,6 +6,9 @@ export interface CreateAppointmentInput {
 }
 
 export interface UpdateAppointmentInput {
+  patientId?: string;
+  date?: string;
+  time?: string;
   status?: 'SCHEDULED' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW';
   notes?: string;
 }

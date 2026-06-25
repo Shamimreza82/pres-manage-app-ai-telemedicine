@@ -7,3 +7,4 @@ dist/
 uploads/*
 !uploads/.gitkeep
 medicine-backend-v2/
+nul

@@ -24,7 +24,7 @@ export const findAppointmentsByDoctor = (doctorId: string, pagination: Paginatio
     db.appointment.findMany({
       where,
       include: { patient: { select: { id: true, fullName: true, patientId: true, phone: true } } },
-      orderBy: { date: 'desc' },
+      orderBy: [{ date: 'desc' }, { serialNo: 'asc' }],
       skip: pagination.skip,
       take: pagination.limit,
     }),
@@ -35,17 +35,28 @@ export const findAppointmentsByDoctor = (doctorId: string, pagination: Paginatio
 export const findAppointmentById = (id: string, doctorId: string) =>
   db.appointment.findFirst({ where: { id, doctorId } });
 
-export const createAppointment = (data: CreateAppointmentInput & { doctorId: string }) =>
-  db.appointment.create({
+export const createAppointment = async (data: CreateAppointmentInput & { doctorId: string }) => {
+  const dateStart = new Date(data.date);
+  dateStart.setHours(0, 0, 0, 0);
+  const dateEnd = new Date(data.date);
+  dateEnd.setHours(23, 59, 59, 999);
+
+  const count = await db.appointment.count({
+    where: { doctorId: data.doctorId, date: { gte: dateStart, lte: dateEnd } },
+  });
+
+  return db.appointment.create({
     data: {
       doctorId: data.doctorId,
       patientId: data.patientId,
       date: new Date(data.date),
       time: data.time,
+      serialNo: count + 1,
       notes: data.notes,
     },
     include: { patient: { select: { fullName: true, patientId: true } } },
   });
+};
 
 export const updateAppointment = (id: string, data: UpdateAppointmentInput) =>
   db.appointment.update({ where: { id }, data, include: { patient: { select: { fullName: true } } } });
@@ -56,6 +67,6 @@ export const findTodayAppointments = (doctorId: string) => {
   return db.appointment.findMany({
     where: { doctorId, date: { gte: start, lte: end } },
     include: { patient: { select: { id: true, fullName: true, patientId: true, phone: true } } },
-    orderBy: { time: 'asc' },
+    orderBy: { serialNo: 'asc' },
   });
 };

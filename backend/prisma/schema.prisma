@@ -257,6 +257,7 @@ model Appointment {
   patientId     String                                  @map("patient_id")
   date          DateTime
   time          String
+  serialNo      Int?
   status        AppointmentStatus @default(SCHEDULED)
   fee           Float?
   paymentStatus String            @default("UNPAID")    @map("payment_status")
