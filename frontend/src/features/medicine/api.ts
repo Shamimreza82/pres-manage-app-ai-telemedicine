@@ -41,6 +41,13 @@ interface Generic {
 interface MedicineSearchResult {
   brands: Brand[];
   generics: Generic[];
+  indications: Indication[];
+}
+
+interface Indication {
+  id: number;
+  name: string;
+  _count: { indicationGenerics: number };
 }
 
 interface LabTest {
@@ -58,3 +65,6 @@ export const searchMedicines = (q: string, limit = 10) =>
 
 export const searchLabTests = (q: string, limit = 10) =>
   medicineApi.get<ApiResponse<LabTest[]>>('/lab-tests/search', { params: { q, limit } }).then((r) => r.data.data);
+
+export const searchIndications = (q: string) =>
+  medicineApi.get<ApiResponse<MedicineSearchResult>>('/medicines/search', { params: { q, limit: 1 } }).then((r) => r.data.data.indications || []);

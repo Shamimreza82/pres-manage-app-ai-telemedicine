@@ -75,6 +75,9 @@ export const PatientForm = ({ onSuccess, initialData }: PatientFormProps) => {
   const set = (field: string, value: string) => {
     setForm(prev => ({ ...prev, [field]: value }));
     if (errors[field]) setErrors(prev => { const n = { ...prev }; delete n[field]; return n; });
+    if (field === 'phone' && value.length > 11) {
+      setErrors(prev => ({ ...prev, phone: 'Phone number cannot exceed 11 characters' }));
+    }
   };
 
   const validate = () => {
@@ -82,7 +85,7 @@ export const PatientForm = ({ onSuccess, initialData }: PatientFormProps) => {
     if (!form.fullName || form.fullName.length < 2) errs.fullName = 'Name must be at least 2 characters';
     if (!form.age || isNaN(Number(form.age)) || Number(form.age) < 1) errs.age = 'Age must be a positive number';
     if (!form.gender) errs.gender = 'Gender is required';
-    if (!form.phone || form.phone.length < 5) errs.phone = 'Phone number is required (min 5 characters)';
+    if (!form.phone || form.phone.length !== 11) errs.phone = 'Phone number must be exactly 11 characters';
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -129,12 +132,12 @@ export const PatientForm = ({ onSuccess, initialData }: PatientFormProps) => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Full Name <span className="text-red-500">*</span></Label>
-                <Input value={form.fullName} onChange={e => set('fullName', e.target.value)} />
+                <Input placeholder="Enter full name" value={form.fullName} onChange={e => set('fullName', e.target.value)} />
                 {errors.fullName && <p className="text-xs text-red-500">{errors.fullName}</p>}
               </div>
               <div className="space-y-2">
                 <Label>Age <span className="text-red-500">*</span></Label>
-                <Input type="number" value={form.age} onChange={e => set('age', e.target.value)} />
+                <Input type="number" placeholder="Enter age" value={form.age} onChange={e => set('age', e.target.value)} />
                 {errors.age && <p className="text-xs text-red-500">{errors.age}</p>}
               </div>
               <div className="space-y-2">
@@ -162,19 +165,20 @@ export const PatientForm = ({ onSuccess, initialData }: PatientFormProps) => {
               </div>
               <div className="space-y-2">
                 <Label>Weight (kg)</Label>
-                <Input type="number" step="0.1" value={form.weight} onChange={e => set('weight', e.target.value)} />
+                <Input type="number" step="0.1" placeholder="e.g. 70" value={form.weight} onChange={e => set('weight', e.target.value)} />
               </div>
               <div className="space-y-2">
                 <Label>Height (cm)</Label>
-                <Input type="number" step="0.1" value={form.height} onChange={e => set('height', e.target.value)} />
+                <Input type="number" step="0.1" placeholder="e.g. 175" value={form.height} onChange={e => set('height', e.target.value)} />
               </div>
               <div className="space-y-2">
                 <Label>Phone <span className="text-red-500">*</span></Label>
-                <Input value={form.phone} onChange={e => set('phone', e.target.value)} />
+                <Input placeholder="e.g. 01712345678" value={form.phone} onChange={e => set('phone', e.target.value)} />
+                {errors.phone && <p className="text-xs text-red-500">{errors.phone}</p>}
               </div>
               <div className="space-y-2">
                 <Label>Emergency Contact</Label>
-                <Input value={form.emergencyContact} onChange={e => set('emergencyContact', e.target.value)} />
+                <Input placeholder="Enter emergency contact" value={form.emergencyContact} onChange={e => set('emergencyContact', e.target.value)} />
               </div>
             </div>
 
@@ -194,19 +198,19 @@ export const PatientForm = ({ onSuccess, initialData }: PatientFormProps) => {
 
             <div className="space-y-2">
               <Label>Address</Label>
-              <Textarea value={form.address} onChange={e => set('address', e.target.value)} />
+              <Textarea placeholder="Enter address" value={form.address} onChange={e => set('address', e.target.value)} />
             </div>
             <div className="space-y-2">
               <Label>Medical History</Label>
-              <Textarea value={form.medicalHistory} onChange={e => set('medicalHistory', e.target.value)} />
+              <Textarea placeholder="Enter medical history" value={form.medicalHistory} onChange={e => set('medicalHistory', e.target.value)} />
             </div>
             <div className="space-y-2">
               <Label>Allergies</Label>
-              <Textarea value={form.allergies} onChange={e => set('allergies', e.target.value)} />
+              <Textarea placeholder="Enter allergies" value={form.allergies} onChange={e => set('allergies', e.target.value)} />
             </div>
             <div className="space-y-2">
               <Label>Previous Diseases</Label>
-              <Textarea value={form.previousDiseases} onChange={e => set('previousDiseases', e.target.value)} />
+              <Textarea placeholder="Enter previous diseases" value={form.previousDiseases} onChange={e => set('previousDiseases', e.target.value)} />
             </div>
 
             <Button onClick={onSubmit} disabled={saving} className="w-full">

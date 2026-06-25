@@ -11,8 +11,8 @@ import { prescriptionSchema } from '@/features/prescriptions/schema';
 import { useMySubscription } from '@/features/plans/hooks';
 import { toast } from 'sonner';
 import { z } from 'zod';
-import { AlertTriangle, Plus, Trash2, Search, X, User, Pill, FlaskConical } from 'lucide-react';
-import { useMedicineSearch, useLabTestSearch } from '@/features/medicine/hooks';
+import { AlertTriangle, Plus, Trash2, Search, X, User, Pill, FlaskConical, Activity } from 'lucide-react';
+import { useMedicineSearch, useLabTestSearch, useIndicationSearch } from '@/features/medicine/hooks';
 import { formatFollowUp } from '@/lib/utils';
 import QRCodeLib from 'qrcode';
 
@@ -47,6 +47,9 @@ function NewPrescriptionForm() {
   const [invQuery, setInvQuery] = useState('');
   const [debouncedMedQuery, setDebouncedMedQuery] = useState('');
   const [debouncedInvQuery, setDebouncedInvQuery] = useState('');
+  const [ccQuery, setCcQuery] = useState('');
+  const [debouncedCcQuery, setDebouncedCcQuery] = useState('');
+  const [showCcDropdown, setShowCcDropdown] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [followUpPreset, setFollowUpPreset] = useState('');
   const [qrDataUrl, setQrDataUrl] = useState('');
@@ -63,6 +66,7 @@ function NewPrescriptionForm() {
 
   const medSearch = useMedicineSearch(debouncedMedQuery);
   const invSearch = useLabTestSearch(debouncedInvQuery);
+  const ccSearch = useIndicationSearch(debouncedCcQuery);
 
   useEffect(() => {
     api.get('/patients?limit=100').then((r) => setPatients(r.data.data)).catch((e) => console.error(e));
@@ -112,8 +116,10 @@ function NewPrescriptionForm() {
 
   const medDebounce = useRef<ReturnType<typeof setTimeout>>(undefined);
   const invDebounce = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const ccDebounce = useRef<ReturnType<typeof setTimeout>>(undefined);
   const medDropdownRef = useRef<HTMLDivElement>(null);
   const invDropdownRef = useRef<HTMLDivElement>(null);
+  const ccDropdownRef = useRef<HTMLDivElement>(null);
 
   const handleMedInputChange = useCallback((i: number, value: string) => {
     setActiveMedIndex(i);
@@ -147,6 +153,21 @@ function NewPrescriptionForm() {
     setDebouncedInvQuery('');
   }, [setValue]);
 
+  const handleCcInputChange = useCallback((value: string) => {
+    setCcQuery(value);
+    setValue('chiefComplaint', value, { shouldValidate: true });
+    setShowCcDropdown(true);
+    if (ccDebounce.current) clearTimeout(ccDebounce.current);
+    ccDebounce.current = setTimeout(() => setDebouncedCcQuery(value), 300);
+  }, [setValue]);
+
+  const selectIndication = useCallback((name: string) => {
+    setValue('chiefComplaint', name, { shouldValidate: true });
+    setShowCcDropdown(false);
+    setCcQuery('');
+    setDebouncedCcQuery('');
+  }, [setValue]);
+
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
       if (medDropdownRef.current && !medDropdownRef.current.contains(e.target as Node)) {
@@ -154,6 +175,9 @@ function NewPrescriptionForm() {
       }
       if (invDropdownRef.current && !invDropdownRef.current.contains(e.target as Node)) {
         setActiveInvIndex(null);
+      }
+      if (ccDropdownRef.current && !ccDropdownRef.current.contains(e.target as Node)) {
+        setShowCcDropdown(false);
       }
     };
     document.addEventListener('mousedown', handleClick);
@@ -381,7 +405,33 @@ function NewPrescriptionForm() {
                   <span className="text-[10px] text-gray-400 font-normal">CC</span>
                 </label>
               </div>
-              <textarea {...register('chiefComplaint')} className="w-full bg-white dark:bg-gray-900 border border-gray-200/60 dark:border-gray-700/60 rounded-xl p-4 text-sm focus:ring-2 focus:ring-teal-500/30 focus:outline-none min-h-[100px] shadow-sm resize-none" placeholder="e.g. Occasional chest pain, SOB for 2 days..." />
+              <div className="relative" ref={ccDropdownRef}>
+                <textarea
+                  value={watch('chiefComplaint')}
+                  onChange={(e) => handleCcInputChange(e.target.value)}
+                  onFocus={() => debouncedCcQuery.length >= 2 && setShowCcDropdown(true)}
+                  className="w-full bg-white dark:bg-gray-900 border border-gray-200/60 dark:border-gray-700/60 rounded-xl p-4 text-sm focus:ring-2 focus:ring-teal-500/30 focus:outline-none min-h-[100px] shadow-sm resize-none"
+                  placeholder="e.g. Occasional chest pain, SOB for 2 days..."
+                />
+                {showCcDropdown && ccSearch.data && ccSearch.data.length > 0 && (
+                  <div className="absolute top-full mt-1 left-0 right-0 z-30 max-h-48 overflow-y-auto rounded-xl bg-white dark:bg-gray-950 border border-gray-100 dark:border-gray-800 shadow-xl">
+                    {ccSearch.data.map((ind) => (
+                      <button
+                        key={ind.id}
+                        type="button"
+                        onClick={() => selectIndication(ind.name)}
+                        className="w-full flex items-start gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors text-left border-b border-gray-50 dark:border-gray-800/50 last:border-0"
+                      >
+                        <Activity className="h-4 w-4 text-teal-500 shrink-0 mt-0.5" />
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-medium text-gray-900 dark:text-white">{ind.name}</p>
+                          <p className="text-xs text-gray-400">Indication</p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
