@@ -22,6 +22,9 @@ export const env = {
   db: {
     url: process.env.DATABASE_URL || '',
   },
+  sentry: {
+    dsn: process.env.SENTRY_DSN || '',
+  },
   platform: {
     companyName: process.env.PLATFORM_COMPANY_NAME || 'PrescribePro',
     address: process.env.PLATFORM_ADDRESS || '',

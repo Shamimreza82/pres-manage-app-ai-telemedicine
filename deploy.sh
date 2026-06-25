@@ -85,6 +85,7 @@ JWT_REFRESH_EXPIRES_IN="7d"
 PORT=${port}
 NODE_ENV=production
 FRONTEND_URL="${frontend_url}"
+SENTRY_DSN=""
 AWS_ACCESS_KEY_ID=""
 AWS_SECRET_ACCESS_KEY=""
 AWS_REGION="ap-southeast-1"
@@ -109,9 +110,13 @@ EOF
         read -rp "  Next.js public API URL [http://123.136.30.206:5000/api]: " api_url
         api_url="${api_url:-http://123.136.30.206:5000/api}"
 
+        read -rp "  Sentry DSN [leave empty to disable]: " sentry_dsn
+        sentry_dsn="${sentry_dsn:-}"
+
         cat > "$FRONTEND_DIR/.env.local" <<EOF
 NEXT_PUBLIC_API_URL=${api_url}
 NEXT_PUBLIC_MEDICINE_API_URL=https://medicine-backen.onrender.com/api/v1
+NEXT_PUBLIC_SENTRY_DSN=${sentry_dsn}
 EOF
         log "frontend/.env.local created"
     else
@@ -156,15 +161,11 @@ build() {
 start_pm2() {
     info "Starting services with PM2..."
 
-    cd "$BACKEND_DIR"
+    cd "$APP_DIR"
     pm2 delete "$PM2_BACKEND" 2>/dev/null || true
-    pm2 start dist/server.js --name "$PM2_BACKEND"
-    log "Backend started (PM2: $PM2_BACKEND)"
-
-    cd "$FRONTEND_DIR"
     pm2 delete "$PM2_FRONTEND" 2>/dev/null || true
-    pm2 start npm --name "$PM2_FRONTEND" -- start -- -p 3030
-    log "Frontend started on port 3030 (PM2: $PM2_FRONTEND)"
+    pm2 start ecosystem.config.js
+    log "Services started via ecosystem.config.js"
 
     pm2 save
     log "PM2 process list saved"
