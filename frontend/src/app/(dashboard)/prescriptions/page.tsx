@@ -3,14 +3,14 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePrescriptions, useDeletePrescription } from '@/features/prescriptions/hooks';
-import { downloadPrescriptionPDF, printPrescriptionPDF } from '@/features/prescriptions/api';
+
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Pagination } from '@/components/ui/pagination';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
-import { Plus, Search, MoreHorizontal, Eye, Download, Trash2, Pencil } from 'lucide-react';
+import { Plus, Search, MoreHorizontal, Eye, Trash2, Pencil } from 'lucide-react';
 
 export default function PrescriptionsPage() {
   const [search, setSearch] = useState('');
@@ -129,18 +129,7 @@ export default function PrescriptionsPage() {
                       <Pencil className="h-4 w-4 text-amber-500" /> Edit
                     </button>
                   </Link>
-                  <button
-                    onClick={() => { printPrescriptionPDF(rx.id); setMenuTarget(null); }}
-                    className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
-                  >
-                    <Download className="h-4 w-4 text-sky-500" /> Print
-                  </button>
-                  <button
-                    onClick={() => { downloadPrescriptionPDF(rx.id); setMenuTarget(null); }}
-                    className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
-                  >
-                    <Download className="h-4 w-4 text-emerald-500" /> Download PDF
-                  </button>
+
                   <div className="border-t border-gray-100 dark:border-gray-800 my-1" />
                   <button
                     onClick={() => { setDeleteId(rx.id); setMenuTarget(null); }}

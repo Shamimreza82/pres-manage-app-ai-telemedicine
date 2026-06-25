@@ -221,6 +221,8 @@ function EditPrescriptionForm() {
                   <div className="flex items-center gap-3 mt-1 text-gray-500 dark:text-gray-400 font-medium text-sm">
                     <span>{selectedPatient.gender?.charAt(0) || '?'}, {selectedPatient.age || '?'} Years</span>
                     <span className="w-1 h-1 bg-gray-300 rounded-full" />
+                    <span>Wt: {selectedPatient.weight || '—'}kg</span>
+                    <span className="w-1 h-1 bg-gray-300 rounded-full" />
                     <span>ID: {selectedPatient.patientId || '—'}</span>
                     {selectedPatient.phone && <><span className="w-1 h-1 bg-gray-300 rounded-full" /><span>{selectedPatient.phone}</span></>}
                   </div>
@@ -603,7 +605,7 @@ function EditPrescriptionForm() {
                     <div>
                       <h4 className="font-bold text-gray-400 uppercase tracking-widest text-[10px] mb-2">Patient Details</h4>
                       <p className="font-bold text-gray-900 dark:text-white truncate">{selectedPatient.fullName}</p>
-                      <p className="text-gray-500">Age: {selectedPatient.age}Y | Sex: {selectedPatient.gender?.charAt(0)}</p>
+                      <p className="text-gray-500">Age: {selectedPatient.age}Y | Sex: {selectedPatient.gender?.charAt(0)} | Wt: {selectedPatient.weight || '—'}kg</p>
                     </div>
                   )}
                   <div>

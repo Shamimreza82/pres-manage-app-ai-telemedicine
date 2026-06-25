@@ -91,7 +91,7 @@ export default function RecPrescriptionDetailPage() {
           <CardContent className="space-y-1 text-sm">
             <p className="font-medium text-gray-900 dark:text-white">{rx.patient?.fullName}</p>
             <p className="text-muted-foreground font-mono">{rx.patient?.patientId}</p>
-            <p className="text-muted-foreground">{rx.patient?.age} years &middot; {rx.patient?.gender}</p>
+            <p className="text-muted-foreground">{rx.patient?.age} years &middot; {rx.patient?.gender} &middot; Wt: {rx.patient?.weight || '—'}kg</p>
           </CardContent>
         </Card>
       </div>

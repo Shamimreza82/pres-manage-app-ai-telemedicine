@@ -237,7 +237,7 @@ export const generatePrescriptionPDF = async (data: {
         .text(data.patient.fullName || '', lx, ly2, { width: LEFT_W });
       ly2 += PX(16);
       doc.fontSize(PX(12)).font(FONT_REG).fillColor('#000')
-        .text(`Age: ${data.patient.age || ''}Y | Sex: ${(data.patient.gender || '')?.charAt(0) || ''}`, lx, ly2, { width: LEFT_W });
+        .text(`Age: ${data.patient.age || ''}Y | Sex: ${(data.patient.gender || '')?.charAt(0) || ''} | Wt: ${data.patient.weight || '—'}kg`, lx, ly2, { width: LEFT_W });
       ly2 += PX(16);
     }
 

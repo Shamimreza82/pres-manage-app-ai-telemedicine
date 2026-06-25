@@ -118,7 +118,7 @@ export default function PrescriptionDetailPage() {
             <div>
               <p className="text-[10px] font-extrabold text-black uppercase tracking-widest mb-1">PATIENT DETAILS</p>
               <p className="text-[12px] font-bold text-black">{rx.patient?.fullName || ''}</p>
-              <p className="text-[12px] font-semibold text-black">Age: {rx.patient?.age || ''}Y | Sex: {(rx.patient?.gender || '')?.charAt(0) || ''}</p>
+              <p className="text-[12px] font-semibold text-black">Age: {rx.patient?.age || ''}Y | Sex: {(rx.patient?.gender || '')?.charAt(0) || ''} | Wt: {rx.patient?.weight || '—'}kg</p>
             </div>
             <div>
               <p className="text-[10px] font-extrabold text-black uppercase tracking-widest mb-1">SYMPTOMS</p>

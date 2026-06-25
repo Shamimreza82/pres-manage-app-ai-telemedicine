@@ -10,7 +10,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Pagination } from '@/components/ui/pagination';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
-import { Plus, Search, MoreHorizontal, Eye, Trash2, Users, Pencil } from 'lucide-react';
+import { Plus, Search, MoreHorizontal, Eye, Trash2, Users, Pencil, FileText } from 'lucide-react';
 
 const genderBadge = (g: string) => {
   const map: Record<string, string> = { MALE: 'badge-gradient-blue', FEMALE: 'badge-gradient-green', OTHER: 'badge-gradient-purple' };
@@ -168,6 +168,11 @@ export default function PatientsPage() {
                   <Link href={`/patients/${patient.id}/edit`} onClick={() => setMenuTarget(null)}>
                     <button className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
                       <Pencil className="h-4 w-4 text-amber-500" /> Edit
+                    </button>
+                  </Link>
+                  <Link href={`/prescriptions/new?patientId=${patient.id}`} onClick={() => setMenuTarget(null)}>
+                    <button className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                      <FileText className="h-4 w-4 text-teal-500" /> Create Prescription
                     </button>
                   </Link>
                   <div className="border-t border-gray-100 dark:border-gray-800 my-1" />
