@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Navbar } from '@/components/landing/Navbar';
 import { Footer } from '@/components/landing/Footer';
 import { HeroSection } from '@/components/landing/HeroSection';
+import { DoctorSearchSection } from '@/components/landing/DoctorSearchSection';
 import { FeaturesSection } from '@/components/landing/FeaturesSection';
 import { PricingSection } from '@/components/landing/PricingSection';
 import { getAuthToken, getUser } from '@/lib/utils';
@@ -27,6 +28,7 @@ export default function LandingPage() {
     <>
       <Navbar />
       <HeroSection />
+      <DoctorSearchSection />
       <FeaturesSection />
       <PricingSection />
       <Footer />

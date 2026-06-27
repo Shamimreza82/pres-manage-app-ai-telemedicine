@@ -3,6 +3,23 @@ import { sendSuccess, sendPaginated } from '../../utils/apiResponse';
 import { catchAsync } from '../../utils/catchAsync';
 import * as doctorService from './service';
 
+export const publicSearchDoctors = catchAsync(async (req, res) => {
+  const { q, degree, specialization } = req.query as Record<string, string | undefined>;
+  const [doctors, total] = await doctorService.searchDoctorsPublic({
+    search: q || '',
+    degree: degree || '',
+    specialization: specialization || '',
+  }, req.query);
+  const page = Number(req.query.page) || 1;
+  const limit = Number(req.query.limit) || 20;
+  sendPaginated(res, doctors, total, page, limit);
+});
+
+export const publicGetDoctor = catchAsync(async (req, res) => {
+  const doctor = await doctorService.getDoctorPublic(req.params.id as string);
+  sendSuccess(res, doctor);
+});
+
 const ALLOWED_FIELDS = [
   'fullName', 'degree', 'specialization', 'bmdcRegNo',
   'clinicName', 'clinicAddress', 'phone', 'chamberSchedule',

@@ -5,6 +5,20 @@ import * as repo from './repository';
 import { UpdateDoctorInput } from './types';
 import { Request } from 'express';
 
+export const searchDoctorsPublic = (
+  filters: { search: string; degree: string; specialization: string },
+  query: Request['query'],
+) => {
+  const pagination = getPaginationParams(query);
+  return repo.searchDoctorsPublic(filters, pagination);
+};
+
+export const getDoctorPublic = async (id: string) => {
+  const doctor = await repo.findDoctorByIdPublic(id);
+  if (!doctor) throw notFound('Doctor not found');
+  return doctor;
+};
+
 export const getDoctorProfile = (doctorId: string) =>
   repo.findDoctorById(doctorId);
 

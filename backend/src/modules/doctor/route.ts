@@ -7,6 +7,10 @@ import * as doctorController from './controller';
 
 const router = Router();
 
+// Public routes (no auth required)
+router.get('/public/search', doctorController.publicSearchDoctors);
+router.get('/public/:id', doctorController.publicGetDoctor);
+
 router.use(authenticate);
 
 router.get('/profile', doctorController.getProfile);

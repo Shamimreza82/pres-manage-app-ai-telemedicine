@@ -1,6 +1,64 @@
 import { db } from '../../config/database';
 import { PaginationParams } from '../../utils/pagination';
 
+const publicSelect = {
+  id: true,
+  fullName: true,
+  degree: true,
+  specialization: true,
+  bmdcRegNo: true,
+  clinicName: true,
+  clinicAddress: true,
+  phone: true,
+  chamberSchedule: true,
+};
+
+export const searchDoctorsPublic = (
+  filters: { search: string; degree: string; specialization: string },
+  pagination: PaginationParams,
+) => {
+  const where: Record<string, unknown> = {
+    user: { isActive: true },
+  };
+  const orConditions: Record<string, unknown>[] = [];
+  if (filters.search) {
+    orConditions.push(
+      { fullName: { contains: filters.search, mode: 'insensitive' } },
+      { clinicName: { contains: filters.search, mode: 'insensitive' } },
+    );
+  }
+  if (filters.degree) {
+    where.degree = { hasSome: [filters.degree] };
+  }
+  if (filters.specialization) {
+    where.specialization = { hasSome: [filters.specialization] };
+  }
+  if (orConditions.length > 0) {
+    where.OR = orConditions;
+  }
+  return Promise.all([
+    db.doctor.findMany({
+      where,
+      select: publicSelect,
+      skip: pagination.skip,
+      take: pagination.limit,
+      orderBy: { fullName: 'asc' },
+    }),
+    db.doctor.count({ where }),
+  ] as const);
+};
+
+export const findDoctorByIdPublic = (doctorId: string) =>
+  db.doctor.findUnique({
+    where: { id: doctorId },
+    select: {
+      ...publicSelect,
+      clinicLogo: true,
+      signatureImg: true,
+      user: { select: { email: true } },
+    },
+  });
+
 export const findDoctorById = (doctorId: string) =>
   db.doctor.findUnique({
     where: { id: doctorId },
