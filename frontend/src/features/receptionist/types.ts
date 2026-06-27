@@ -77,10 +77,6 @@ export interface Prescription {
   doctor?: any;
 }
 
-export interface PaginatedResponse<T> {
-  data: T[];
-  page: number;
-  limit: number;
-  total: number;
-  totalPages: number;
-}
+import type { PaginatedResponse } from '@/types';
+
+export { PaginatedResponse };

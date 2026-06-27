@@ -114,14 +114,14 @@ export default function ProfilePage() {
 
             <div className="grid grid-cols-2 gap-6 pt-4">
               <div className="border-2 border-dashed rounded-xl p-4 text-center">
-                {profile?.signatureImg ? <img src={`http://localhost:5000/uploads/${profile.signatureImg}`} alt="Sig" className="h-16 mx-auto mb-2 object-contain" /> : <Camera className="h-8 w-8 mx-auto text-muted-foreground mb-2" />}
+                {profile?.signatureImg ? <img src={`${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5000'}/uploads/${profile.signatureImg}`} alt="Sig" className="h-16 mx-auto mb-2 object-contain" /> : <Camera className="h-8 w-8 mx-auto text-muted-foreground mb-2" />}
                 <Label htmlFor="sig" className="cursor-pointer text-sm text-primary flex items-center justify-center gap-2">
                   <Upload className="h-4 w-4" /> Upload Signature
                 </Label>
                 <input id="sig" type="file" accept="image/*" className="hidden" onChange={(e) => handleUpload('signature', e.target.files?.[0] || null)} />
               </div>
               <div className="border-2 border-dashed rounded-xl p-4 text-center">
-                {profile?.clinicLogo ? <img src={`http://localhost:5000/uploads/${profile.clinicLogo}`} alt="Logo" className="h-16 mx-auto mb-2 object-contain" /> : <Camera className="h-8 w-8 mx-auto text-muted-foreground mb-2" />}
+                {profile?.clinicLogo ? <img src={`${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5000'}/uploads/${profile.clinicLogo}`} alt="Logo" className="h-16 mx-auto mb-2 object-contain" /> : <Camera className="h-8 w-8 mx-auto text-muted-foreground mb-2" />}
                 <Label htmlFor="logo" className="cursor-pointer text-sm text-primary flex items-center justify-center gap-2">
                   <Upload className="h-4 w-4" /> Upload Logo
                 </Label>

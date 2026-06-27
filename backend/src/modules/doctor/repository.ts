@@ -10,8 +10,8 @@ export const findDoctorById = (doctorId: string) =>
     },
   });
 
-export const updateDoctor = (doctorId: string, data: any) =>
-  db.doctor.update({ where: { id: doctorId }, data: { ...data, isProfileComplete: true } });
+export const updateDoctor = (doctorId: string, data: Record<string, unknown>) =>
+  db.doctor.update({ where: { id: doctorId }, data: { ...data, isProfileComplete: true } as any });
 
 export const updateSignature = (doctorId: string, filename: string) =>
   db.doctor.update({ where: { id: doctorId }, data: { signatureImg: filename } });
@@ -26,7 +26,7 @@ export const removeLogo = (doctorId: string) =>
   db.doctor.update({ where: { id: doctorId }, data: { clinicLogo: null } });
 
 export const findAllDoctors = (pagination: PaginationParams) => {
-  const where: any = {};
+  const where: Record<string, unknown> = {};
   if (pagination.search) {
     where.OR = [
       { fullName: { contains: pagination.search, mode: 'insensitive' } },

@@ -1,13 +1,6 @@
 import { api } from '@/lib/axios';
 import { Prescription, CreatePrescriptionInput } from './types';
-
-export interface PaginatedResponse<T> {
-  data: T[];
-  page: number;
-  limit: number;
-  total: number;
-  totalPages: number;
-}
+import type { PaginatedResponse } from '@/types';
 
 export const getPrescriptions = (params?: Record<string, string>) =>
   api.get<PaginatedResponse<Prescription>>('/prescriptions', { params }).then((r) => r.data);

@@ -11,7 +11,7 @@ export const getDoctorProfile = (doctorId: string) =>
 export const updateDoctorProfile = async (doctorId: string, input: UpdateDoctorInput) => {
   const doctor = await repo.findDoctorById(doctorId);
   if (!doctor) throw notFound('Doctor not found');
-  return repo.updateDoctor(doctorId, input);
+  return repo.updateDoctor(doctorId, input as unknown as Record<string, unknown>);
 };
 
 export const uploadSignature = async (doctorId: string, filename: string) => {

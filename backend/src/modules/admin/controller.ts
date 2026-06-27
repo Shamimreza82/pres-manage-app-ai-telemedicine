@@ -68,8 +68,8 @@ export const listSubscriptions = catchAsync(async (req: AuthRequest, res) => {
 });
 
 export const updateSubscription = catchAsync(async (req: AuthRequest, res) => {
-  const sub = await adminService.updateSubscriptionPlan(req.params.id as string, req.body);
-  await createAuditLog({ userId: req.user!.userId, action: 'UPDATE', entity: 'Subscription', entityId: req.params.id as string, details: req.body });
+  const sub = await adminService.updateSubscriptionPlan(req.params.id as string as string, req.body);
+  await createAuditLog({ userId: req.user!.userId, action: 'UPDATE', entity: 'Subscription', entityId: req.params.id as string as string, details: req.body });
   sendSuccess(res, sub);
 });
 
@@ -79,7 +79,7 @@ export const listPlans = catchAsync(async (_req: AuthRequest, res) => {
 });
 
 export const getPlan = catchAsync(async (req: AuthRequest, res) => {
-  const plan = await adminService.getPlan(req.params.id as string);
+  const plan = await adminService.getPlan(req.params.id as string as string);
   sendSuccess(res, plan);
 });
 
@@ -90,14 +90,14 @@ export const createPlan = catchAsync(async (req: AuthRequest, res) => {
 });
 
 export const updatePlan = catchAsync(async (req: AuthRequest, res) => {
-  const plan = await adminService.editPlan(req.params.id as string, req.body);
-  await createAuditLog({ userId: req.user!.userId, action: 'UPDATE', entity: 'Plan', entityId: req.params.id as string, details: req.body });
+  const plan = await adminService.editPlan(req.params.id as string as string, req.body);
+  await createAuditLog({ userId: req.user!.userId, action: 'UPDATE', entity: 'Plan', entityId: req.params.id as string as string, details: req.body });
   sendSuccess(res, plan);
 });
 
 export const deletePlan = catchAsync(async (req: AuthRequest, res) => {
-  await adminService.removePlan(req.params.id as string);
-  await createAuditLog({ userId: req.user!.userId, action: 'DELETE', entity: 'Plan', entityId: req.params.id as string });
+  await adminService.removePlan(req.params.id as string as string);
+  await createAuditLog({ userId: req.user!.userId, action: 'DELETE', entity: 'Plan', entityId: req.params.id as string as string });
   sendSuccess(res, { message: 'Plan deleted successfully' });
 });
 
@@ -107,7 +107,7 @@ export const getUser = catchAsync(async (req: AuthRequest, res) => {
 });
 
 export const clearDoctorMrAssignments = catchAsync(async (req: AuthRequest, res) => {
-  const result = await adminService.clearDoctorMrAssignments(req.params.doctorId as string);
-  await createAuditLog({ userId: req.user!.userId, action: 'UPDATE', entity: 'Doctor', entityId: req.params.doctorId as string, details: { action: 'clear_mr_assignments' } });
+  const result = await adminService.clearDoctorMrAssignments(req.params.doctorId as string as string);
+  await createAuditLog({ userId: req.user!.userId, action: 'UPDATE', entity: 'Doctor', entityId: req.params.doctorId as string as string, details: { action: 'clear_mr_assignments' } });
   sendSuccess(res, result);
 });

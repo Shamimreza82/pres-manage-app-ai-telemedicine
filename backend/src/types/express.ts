@@ -7,6 +7,7 @@ export interface AuthPayload {
   doctorId?: string;
   mrId?: string;
   receptionistId?: string;
+  isActive?: boolean;
 }
 
 export type AuthRequest = Request & { user?: AuthPayload };

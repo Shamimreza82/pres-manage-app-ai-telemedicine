@@ -13,36 +13,38 @@ const generateTokens = (payload: {
   doctorId?: string;
   mrId?: string;
   receptionistId?: string;
+  isActive?: boolean;
 }): Tokens => ({
   accessToken: signAccessToken(payload),
   refreshToken: signRefreshToken(payload),
 });
 
 export const registerUser = async (input: RegisterInput) => {
-  const existing = await repo.findUserByEmail(input.email);
+  const existing = await repo.findUserByEmailDash(input.email);
   if (existing) throw badRequest('Email already registered');
 
   const hashed = await hashPassword(input.password);
+  const role = (input.role || 'DOCTOR') as any;
 
   const result = await db.$transaction(async (tx: Prisma.TransactionClient) => {
     const user = await tx.user.create({
       data: {
         email: input.email,
         password: hashed,
-        role: (input.role || 'DOCTOR') as any,
+        role,
         doctor:
-          (input.role || 'DOCTOR') === 'DOCTOR'
-              ? {
-                  create: {
-                    fullName: input.fullName,
-                    degree: [],
-                    specialization: [],
-                    clinicName: '',
-                    clinicAddress: '',
-                    phone: '',
-                  },
-                }
-              : undefined,
+          role === 'DOCTOR'
+            ? {
+                create: {
+                  fullName: input.fullName,
+                  degree: [],
+                  specialization: [],
+                  clinicName: '',
+                  clinicAddress: '',
+                  phone: '',
+                },
+              }
+            : undefined,
       },
       include: { doctor: true },
     });
@@ -69,6 +71,7 @@ export const registerUser = async (input: RegisterInput) => {
     email: result.email,
     role: result.role,
     doctorId: result.doctor?.id,
+    isActive: true,
   };
 
   const tokens = generateTokens(payload);
@@ -95,6 +98,7 @@ export const loginUser = async (input: LoginInput) => {
     doctorId: user.doctor?.id || user.receptionist?.doctorId,
     mrId: user.mr?.id,
     receptionistId: user.receptionist?.id,
+    isActive: user.isActive,
   };
 
   const tokens = generateTokens(payload);
@@ -126,6 +130,7 @@ export const refreshUserToken = async (token: string) => {
       doctorId: user.doctor?.id || user.receptionist?.doctorId,
       mrId: user.mr?.id,
       receptionistId: user.receptionist?.id,
+      isActive: user.isActive,
     };
 
     const tokens = generateTokens(payload);

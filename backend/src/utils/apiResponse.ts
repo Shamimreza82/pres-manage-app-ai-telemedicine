@@ -11,10 +11,10 @@ export const sendPaginated = (
   limit: number
 ) =>
   res.status(200).json({
+    success: true,
     data,
     page,
     limit,
     total,
     totalPages: Math.ceil(total / limit),
   });
-

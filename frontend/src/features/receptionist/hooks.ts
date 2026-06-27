@@ -134,7 +134,7 @@ export const useCreateReceptionistByDoctor = () => {
   return useMutation({
     mutationFn: receptionistApi.createReceptionistByDoctor,
     onSuccess: () => {
-      qc.invalidateQueries();
+      qc.invalidateQueries({ queryKey: doctorRecKeys.all });
       toast.success('Receptionist created successfully');
     },
     onError: (err: any) => toast.error(err.response?.data?.message || 'Failed to create receptionist'),
@@ -183,7 +183,7 @@ export const useDeleteReceptionistByDoctor = () => {
   return useMutation({
     mutationFn: receptionistApi.deleteReceptionistByDoctor,
     onSuccess: () => {
-      qc.invalidateQueries();
+      qc.invalidateQueries({ queryKey: doctorRecKeys.all });
       toast.success('Receptionist deleted successfully');
     },
     onError: (err: any) => toast.error(err.response?.data?.message || 'Failed to delete receptionist'),

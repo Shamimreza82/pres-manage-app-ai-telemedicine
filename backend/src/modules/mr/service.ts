@@ -9,11 +9,13 @@ import { Request } from 'express';
 import { generatePrescriptionPDF } from '../prescription/pdf';
 import type { Prisma } from '@prisma/client';
 
-export const getMyProfile = async (userId: string) => {
+const getMrOrThrow = async (userId: string) => {
   const mr = await repo.findMrByUserId(userId);
   if (!mr) throw notFound('MR profile not found');
   return mr;
 };
+
+export const getMyProfile = async (userId: string) => getMrOrThrow(userId);
 
 export const getMrById = async (id: string) => {
   const mr = await repo.findMrById(id);
@@ -69,8 +71,7 @@ export const updateMr = async (id: string, input: UpdateMrInput) => {
 };
 
 export const updateMyProfile = async (userId: string, input: UpdateMrInput) => {
-  const mr = await repo.findMrByUserId(userId);
-  if (!mr) throw notFound('MR profile not found');
+  const mr = await getMrOrThrow(userId);
   return repo.updateMr(mr.id, input);
 };
 
@@ -89,25 +90,26 @@ export const assignDoctors = async (mrId: string, input: AssignDoctorsInput) => 
 };
 
 export const getMyDoctors = async (userId: string, query: Request['query']) => {
-  const mr = await repo.findMrByUserId(userId);
-  if (!mr) throw notFound('MR profile not found');
+  const mr = await getMrOrThrow(userId);
   const pagination = getPaginationParams(query);
   return repo.getMyDoctorsPaginated(mr.id, pagination);
 };
 
+const assertDoctorAssigned = (mr: { doctors: Array<{ doctorId: string }> }, doctorId: string) => {
+  if (!mr.doctors.some((d) => d.doctorId === doctorId)) {
+    throw badRequest('Doctor is not assigned to you');
+  }
+};
+
 export const getDoctorPatients = async (mrUserId: string, doctorId: string) => {
-  const mr = await repo.findMrByUserId(mrUserId);
-  if (!mr) throw notFound('MR profile not found');
-  const assigned = mr.doctors.some((d: { doctorId: string }) => d.doctorId === doctorId);
-  if (!assigned) throw badRequest('Doctor is not assigned to you');
+  const mr = await getMrOrThrow(mrUserId);
+  assertDoctorAssigned(mr, doctorId);
   return repo.getDoctorPatients(doctorId);
 };
 
 export const getDoctorPrescriptions = async (mrUserId: string, doctorId: string, query: Request['query']) => {
-  const mr = await repo.findMrByUserId(mrUserId);
-  if (!mr) throw notFound('MR profile not found');
-  const assigned = mr.doctors.some((d: { doctorId: string }) => d.doctorId === doctorId);
-  if (!assigned) throw badRequest('Doctor is not assigned to you');
+  const mr = await getMrOrThrow(mrUserId);
+  assertDoctorAssigned(mr, doctorId);
   const pagination = getPaginationParams(query);
   return repo.getDoctorPrescriptions(doctorId, pagination);
 };
@@ -115,26 +117,22 @@ export const getDoctorPrescriptions = async (mrUserId: string, doctorId: string,
 export const getAvailableDoctors = () => repo.findDoctorsForAssignment();
 
 export const getDashboardStats = async (userId: string) => {
-  const mr = await repo.findMrByUserId(userId);
-  if (!mr) throw notFound('MR profile not found');
-  type MrDoctorAssignment = typeof mr.doctors[number];
-  const doctorIds = mr.doctors.map((d: MrDoctorAssignment) => d.doctorId);
+  const mr = await getMrOrThrow(userId);
+  const doctorIds = mr.doctors.map((d) => d.doctorId);
   const totalDoctors = doctorIds.length;
   const todaysPrescriptions = doctorIds.length > 0
     ? await repo.getTodaysPrescriptionsByDoctors(doctorIds)
     : 0;
   const totalPrescriptions = mr.doctors.reduce(
-    (sum: number, d: MrDoctorAssignment) => sum + (d.doctor._count?.prescriptions || 0), 0
+    (sum, d) => sum + (d.doctor._count?.prescriptions || 0), 0
   );
   return { totalDoctors, todaysPrescriptions, totalPrescriptions };
 };
 
 export const getDoctorPrescriptionById = async (mrUserId: string, doctorId: string, prescriptionId: string) => {
-  const mr = await repo.findMrByUserId(mrUserId);
-  if (!mr) throw notFound('MR profile not found');
-  const assigned = mr.doctors.some((d: { doctorId: string }) => d.doctorId === doctorId);
-  if (!assigned) throw badRequest('Doctor is not assigned to you');
-  const doctorIds = mr.doctors.map((d: { doctorId: string }) => d.doctorId);
+  const mr = await getMrOrThrow(mrUserId);
+  assertDoctorAssigned(mr, doctorId);
+  const doctorIds = mr.doctors.map((d) => d.doctorId);
   const rx = await repo.findPrescriptionForMr(prescriptionId, doctorIds);
   if (!rx) throw notFound('Prescription not found');
   return rx;
@@ -146,27 +144,13 @@ export const downloadDoctorPrescriptionPdf = async (mrUserId: string, doctorId: 
   return generatePrescriptionPDF(pdfData);
 };
 
-export const getMrSubscriptions = async (userId: string) => {
-  const mr = await repo.findMrByUserId(userId);
-  if (!mr) throw notFound('MR profile not found');
-
-  const plans = await db.plan.findMany({ where: { isActive: true }, orderBy: { price: 'asc' } });
-
-  return mr.doctors.map((assignment: any) => ({
-    doctor: assignment.doctor,
-    subscription: null,
-    plans,
-  }));
-};
-
 export const getMrSubscriptionsPaginated = async (userId: string, query: Request['query']) => {
-  const mr = await repo.findMrByUserId(userId);
-  if (!mr) throw notFound('MR profile not found');
+  const mr = await getMrOrThrow(userId);
 
   const pagination = getPaginationParams(query);
   const [doctors, total] = await repo.getMrDoctorsPaginatedWithSubs(mr.id, pagination);
 
-  const doctorIds = doctors.map((d: { id: string }) => d.id);
+  const doctorIds = doctors.map((d) => d.id);
 
   const subscriptions = await db.subscription.findMany({
     where: { doctorId: { in: doctorIds } },
@@ -178,8 +162,8 @@ export const getMrSubscriptionsPaginated = async (userId: string, query: Request
 
   const plans = await db.plan.findMany({ where: { isActive: true }, orderBy: { price: 'asc' } });
 
-  const data = doctors.map((doctor: any) => {
-    const sub = subscriptions.find((s: any) => s.doctorId === doctor.id);
+  const data = doctors.map((doctor) => {
+    const sub = subscriptions.find((s) => s.doctorId === doctor.id);
     return { doctor, subscription: sub || null, plans };
   });
 
@@ -191,11 +175,8 @@ export const getMrSubscriptionsPaginated = async (userId: string, query: Request
 };
 
 export const subscribeDoctor = async (mrUserId: string, doctorId: string, input: SubscribeDoctorInput) => {
-  const mr = await repo.findMrByUserId(mrUserId);
-  if (!mr) throw notFound('MR profile not found');
-
-  const assigned = mr.doctors.some((d: { doctorId: string }) => d.doctorId === doctorId);
-  if (!assigned) throw badRequest('Doctor is not assigned to you');
+  const mr = await getMrOrThrow(mrUserId);
+  assertDoctorAssigned(mr, doctorId);
 
   const plan = await db.plan.findUnique({ where: { id: input.planId } });
   if (!plan) throw badRequest('Plan not found');

@@ -11,7 +11,7 @@ router.use(authenticate, authorize('DOCTOR'));
 router.post('/', validateBody(createPrescriptionSchema), prescriptionController.create);
 router.get('/', prescriptionController.findAll);
 router.get('/:id', prescriptionController.findById);
-router.put('/:id', prescriptionController.update);
+router.put('/:id', validateBody(updatePrescriptionSchema), prescriptionController.update);
 router.delete('/:id', prescriptionController.remove);
 router.get('/:id/pdf', prescriptionController.downloadPdf);
 router.get('/:id/print', prescriptionController.printPdf);

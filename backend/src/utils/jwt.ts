@@ -6,6 +6,9 @@ export interface JwtPayload {
   email: string;
   role: string;
   doctorId?: string;
+  mrId?: string;
+  receptionistId?: string;
+  isActive?: boolean;
 }
 
 export const signAccessToken = (payload: JwtPayload): string =>

@@ -2,7 +2,6 @@ import { Response, NextFunction } from 'express';
 import { verifyAccessToken } from '../utils/jwt';
 import { unauthorized, forbidden } from '../utils/errors';
 import { AuthRequest } from '../types/express';
-import { db } from '../config/database';
 import { catchAsync } from '../utils/catchAsync';
 
 export const authenticate = catchAsync(async (req: AuthRequest, _res: Response, next: NextFunction) => {
@@ -13,8 +12,7 @@ export const authenticate = catchAsync(async (req: AuthRequest, _res: Response, 
 
   try {
     const decoded = verifyAccessToken(token);
-    const user = await db.user.findUnique({ where: { id: decoded.userId }, select: { isActive: true } });
-    if (!user || !user.isActive) return next(unauthorized('Account is deactivated'));
+    if (!decoded.isActive) return next(unauthorized('Account is deactivated'));
     req.user = decoded;
     next();
   } catch {

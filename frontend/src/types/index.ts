@@ -18,7 +18,7 @@ export interface Doctor {
   phone: string;
   signatureImg?: string;
   clinicLogo?: string;
-  chamberSchedule?: any;
+  chamberSchedule?: unknown;
   isProfileComplete: boolean;
   email?: string;
 }
@@ -82,4 +82,11 @@ export interface Prescription {
   doctor?: Doctor;
 }
 
-
+export interface PaginatedResponse<T> {
+  success: boolean;
+  data: T[];
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
